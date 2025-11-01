@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -59,6 +60,10 @@ export default function Home() {
             Documentation
           </a>
         </div>
+        <Button>Click me</Button>
+        <Button asChild variant="link">
+          <a href="/components">View Components</a>
+        </Button>
       </main>
     </div>
   );
