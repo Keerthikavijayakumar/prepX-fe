@@ -4,9 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --default-font-family: 'Inter', system-ui, sans-serif;
-  --font-sans: var(--default-font-family);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: var(--font-inter);
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -36,71 +35,73 @@
   /* Base */
   --radius: 0.75rem;
   
-  /* Light Mode - Custom Color Palette */
-  --background: rgb(244, 244, 244);
-  --foreground: rgb(12, 43, 78);
+  /* Light Mode - Professional Trust Palette */
+  --background: rgb(248, 250, 252);
+  --foreground: rgb(15, 23, 42);
   
   --card: rgb(255, 255, 255);
-  --card-foreground: rgb(12, 43, 78);
+  --card-foreground: rgb(15, 23, 42);
   
   --popover: rgb(255, 255, 255);
-  --popover-foreground: rgb(12, 43, 78);
+  --popover-foreground: rgb(15, 23, 42);
   
-  /* Deep blue primary */
-  --primary: rgb(12, 43, 78);
-  --primary-foreground: rgb(244, 244, 244);
+  /* Deep Navy - Professional & Trustworthy */
+  --primary: rgb(30, 58, 138);
+  --primary-foreground: rgb(255, 255, 255);
   
-  /* Medium blue secondary */
-  --secondary: rgb(26, 61, 100);
-  --secondary-foreground: rgb(244, 244, 244);
+  /* Vibrant Blue - Modern & Approachable */
+  --secondary: rgb(59, 130, 246);
+  --secondary-foreground: rgb(255, 255, 255);
   
-  --muted: rgba(12, 43, 78, 0.1);
-  --muted-foreground: rgba(12, 43, 78, 0.7);
+  /* Changed: Use neutral colors for muted (for skeletons) */
+  --muted: rgb(226, 232, 240);
+  --muted-foreground: rgb(100, 116, 139);
   
-  /* Teal accent */
-  --accent: rgb(29, 84, 108);
-  --accent-foreground: rgb(244, 244, 244);
+  /* Success Green - Growth & Opportunity */
+  --accent: rgb(16, 185, 129);
+  --accent-foreground: rgb(255, 255, 255);
   
-  --destructive: rgb(220, 38, 38);
-  --destructive-foreground: rgb(244, 244, 244);
+  --destructive: rgb(239, 68, 68);
+  --destructive-foreground: rgb(255, 255, 255);
   
-  --border: rgba(12, 43, 78, 0.2);
-  --input: rgba(12, 43, 78, 0.2);
-  --ring: rgba(12, 43, 78, 0.3);
+  --border: rgb(226, 232, 240);
+  --input: rgb(226, 232, 240);
+  --ring: rgb(59, 130, 246);
 }
 
 .dark {
-  /* Dark Mode - Custom Color Palette */
-  --background: rgb(12, 43, 78);
-  --foreground: rgb(244, 244, 244);
+  /* Dark Mode - Professional Trust Palette */
+  --background: rgb(15, 23, 42);
+  --foreground: rgb(248, 250, 252);
   
-  --card: rgb(26, 61, 100);
-  --card-foreground: rgb(244, 244, 244);
+  --card: rgb(30, 41, 59);
+  --card-foreground: rgb(248, 250, 252);
   
-  --popover: rgb(26, 61, 100);
-  --popover-foreground: rgb(244, 244, 244);
+  --popover: rgb(30, 41, 59);
+  --popover-foreground: rgb(248, 250, 252);
   
-  /* Light color as primary in dark mode */
-  --primary: rgb(244, 244, 244);
-  --primary-foreground: rgb(12, 43, 78);
+  /* Bright Blue - Inverted for dark mode */
+  --primary: rgb(96, 165, 250);
+  --primary-foreground: rgb(15, 23, 42);
   
-  /* Teal as secondary */
-  --secondary: rgb(29, 84, 108);
-  --secondary-foreground: rgb(244, 244, 244);
+  /* Vibrant Blue - Consistent across modes */
+  --secondary: rgb(59, 130, 246);
+  --secondary-foreground: rgb(255, 255, 255);
   
-  --muted: rgba(244, 244, 244, 0.1);
-  --muted-foreground: rgba(244, 244, 244, 0.7);
+  /* Changed: Use neutral colors for muted (for skeletons in dark mode) */
+  --muted: rgb(51, 65, 85);
+  --muted-foreground: rgb(148, 163, 184);
   
-  /* Medium blue as accent */
-  --accent: rgb(26, 61, 100);
-  --accent-foreground: rgb(244, 244, 244);
+  /* Success Green - Keep for success states */
+  --accent: rgb(16, 185, 129);
+  --accent-foreground: rgb(255, 255, 255);
   
-  --destructive: rgb(239, 68, 68);
-  --destructive-foreground: rgb(244, 244, 244);
+  --destructive: rgb(248, 113, 113);
+  --destructive-foreground: rgb(15, 23, 42);
   
-  --border: rgba(244, 244, 244, 0.2);
-  --input: rgba(244, 244, 244, 0.2);
-  --ring: rgba(244, 244, 244, 0.3);
+  --border: rgb(51, 65, 85);
+  --input: rgb(51, 65, 85);
+  --ring: rgb(96, 165, 250);
 }
 
 @layer base {
@@ -109,5 +110,44 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Fix: Add cursor pointer to interactive elements */
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  
+  /* Ensure clickable elements in shadcn components have pointer cursor */
+  [data-radix-collection-item],
+  [data-accordion-trigger],
+  [data-state="closed"],
+  [data-state="open"] {
+    cursor: pointer;
+  }
+  
+  /* Disabled elements should show not-allowed cursor */
+  button:disabled,
+  [disabled],
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  
+  /* Input elements should show text cursor */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    cursor: text;
   }
 }
