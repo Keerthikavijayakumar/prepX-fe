@@ -1,0 +1,110 @@
+.panel {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.edit {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  color: #a5b4fc;
+  cursor: pointer;
+}
+
+.edit:hover {
+  color: #c7d2fe;
+  text-decoration: underline;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+.email {
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input {
+  flex: 1;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.95);
+  padding: 10px 12px;
+  font-size: 1.1rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+  color: #e5e7eb;
+}
+
+.input::placeholder {
+  color: #4b5563;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #a5b4fc;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #c7d2fe;
+}
+
+.timer {
+  opacity: 0.8;
+}
+
+@media (max-width: 640px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .inputRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .input {
+    letter-spacing: 0.2em;
+    font-size: 1rem;
+  }
+
+  .verifyButton {
+    width: 100%;
+  }
+}
