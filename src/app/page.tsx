@@ -1,12 +1,9 @@
-import { MainNavbar } from "@/components/main-navbar";
+import { StartInterviewButton } from "@/components/start-interview-button";
 import styles from "./page.module.css";
 
 export default function Home() {
   return (
     <div>
-      {/* Navbar */}
-      <MainNavbar />
-
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles["glow-blob"]} />
@@ -27,7 +24,7 @@ export default function Home() {
             </p>
 
             <div className={styles["hero-buttons"]}>
-              <button className="btn btn-primary">Start Mock Interview</button>
+              <StartInterviewButton />
               <button className="btn btn-outline">View Demo</button>
             </div>
           </div>
@@ -53,24 +50,33 @@ export default function Home() {
                 # AI: Can you optimize this solution for O(n) time?
               </span>
               <span className={styles["code-line"]}>
-                <span className={styles.keyword}>def</span> <span className={styles.function}>two_sum</span>
+                <span className={styles.keyword}>def</span>{" "}
+                <span className={styles.function}>two_sum</span>
                 (nums, target):
               </span>
-              <span className={styles["code-line"]}>    prev_map = &#123;&#125;</span>
               <span className={styles["code-line"]}>
-                <span className={styles.keyword}>    for</span> i, n <span className={styles.keyword}>in</span> <span className={styles.function}>enumerate</span>
+                {" "}
+                prev_map = &#123;&#125;
+              </span>
+              <span className={styles["code-line"]}>
+                <span className={styles.keyword}> for</span> i, n{" "}
+                <span className={styles.keyword}>in</span>{" "}
+                <span className={styles.function}>enumerate</span>
                 (nums):
               </span>
-              <span className={styles["code-line"]}>        diff = target - n</span>
+              <span className={styles["code-line"]}> diff = target - n</span>
               <span className={styles["code-line"]}>
-                <span className={styles.keyword}>        if</span> diff <span className={styles.keyword}>in</span> prev_map:
+                <span className={styles.keyword}> if</span> diff{" "}
+                <span className={styles.keyword}>in</span> prev_map:
               </span>
               <span className={styles["code-line"]}>
-                <span className={styles.keyword}>            return</span> [prev_map[diff], i]
+                <span className={styles.keyword}> return</span> [prev_map[diff],
+                i]
               </span>
-              <span className={styles["code-line"]}>        prev_map[n] = i</span>
+              <span className={styles["code-line"]}> prev_map[n] = i</span>
               <span className={styles["code-line"]}>
-                <span className={styles.keyword}>    return</span> <span className={styles.cursor} />
+                <span className={styles.keyword}> return</span>{" "}
+                <span className={styles.cursor} />
               </span>
             </div>
           </div>
@@ -102,7 +108,9 @@ export default function Home() {
         <div className="container">
           <div className={styles["section-title"]}>
             <h2>Engineered for Engineers</h2>
-            <p>Everything you need to pass L5+ interviews at Top Tech companies.</p>
+            <p>
+              Everything you need to pass L5+ interviews at Top Tech companies.
+            </p>
           </div>
 
           <div className={styles.grid}>
@@ -110,8 +118,9 @@ export default function Home() {
               <div className={styles.icon}>⚡</div>
               <h3>Real-time Voice AI</h3>
               <p>
-                Speak naturally. Our AI understands technical jargon, interrupts,
-                and clarifying questions just like a human interviewer.
+                Speak naturally. Our AI understands technical jargon,
+                interrupts, and clarifying questions just like a human
+                interviewer.
               </p>
             </div>
 
@@ -119,8 +128,8 @@ export default function Home() {
               <div className={styles.icon}>🏗️</div>
               <h3>System Design Canvas</h3>
               <p>
-                Draw architecture diagrams on a collaborative whiteboard while the
-                AI critiques your scalability and trade-off choices.
+                Draw architecture diagrams on a collaborative whiteboard while
+                the AI critiques your scalability and trade-off choices.
               </p>
             </div>
 
@@ -169,9 +178,7 @@ export default function Home() {
       <footer className={styles.footer}>
         <div className="container">
           <p>&copy; 2024 DevMock AI Inc. All systems operational.</p>
-          <p
-            style={{ marginTop: "10px", fontSize: "0.8rem", opacity: 0.6 }}
-          >
+          <p style={{ marginTop: "10px", fontSize: "0.8rem", opacity: 0.6 }}>
             Made for developers, by developers.
           </p>
         </div>
