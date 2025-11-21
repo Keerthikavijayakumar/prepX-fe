@@ -42,6 +42,36 @@
   color: #ffffff;
 }
 
+.userControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 0%, rgba(129, 140, 248, 0.85), transparent 60%),
+    rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(129, 140, 248, 0.7);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.avatarButton:hover {
+  border-color: #c7d2fe;
+}
+
+.avatarInitial {
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
   .navLinks {
     display: none;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { StartInterviewButton } from "@/components/start-interview-button";
+import { NavbarUserControls } from "./NavbarUserControls";
 import styles from "./MainNavbar.module.css";
 
 export function MainNavbar() {
@@ -24,7 +24,7 @@ export function MainNavbar() {
               <Link href="#">Enterprise</Link>
             </li>
           </ul>
-          <StartInterviewButton />
+          <NavbarUserControls />
         </nav>
       </div>
     </header>

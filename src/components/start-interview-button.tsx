@@ -29,7 +29,7 @@ export function StartInterviewButton() {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? "Preparing interview..." : "Start Mock Interview"}
+      Start Mock Interview
     </button>
   );
 }
