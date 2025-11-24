@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { PrimaryButton } from "@/components/shared/primary-button";
-import { TextInput } from "@/components/shared/text-input";
+import { FormEvent, useState, ChangeEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import styles from "./ResumeIntake.module.css";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -109,7 +110,11 @@ type ResumeIntakeProps = {
   onResumeUploaded?: () => void;
 };
 
-export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: ResumeIntakeProps) {
+export function ResumeIntake({
+  apiUrl,
+  onSubmitParsed,
+  onResumeUploaded,
+}: ResumeIntakeProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -126,7 +131,11 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
     setParsed(null);
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      setFileError(`File size exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
+      setFileError(
+        `File size exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(
+          1
+        )}MB)`
+      );
       setFileName(null);
       setSelectedFile(null);
       setPreviewUrl(null);
@@ -145,7 +154,7 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
     }
   }
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -162,9 +171,9 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
   async function handleUpload(event: FormEvent) {
     event.preventDefault();
 
-    const input = document.getElementById("resume-upload-input") as
-      | HTMLInputElement
-      | null;
+    const input = document.getElementById(
+      "resume-upload-input"
+    ) as HTMLInputElement | null;
 
     const file = selectedFile ?? input?.files?.[0] ?? null;
 
@@ -272,7 +281,12 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
             "Recognized for mentoring junior engineers and driving interview excellence.",
         },
       ],
-      interests: ["System design", "Interviewing", "AI tooling", "Developer experience"],
+      interests: [
+        "System design",
+        "Interviewing",
+        "AI tooling",
+        "Developer experience",
+      ],
       last_updated: new Date().toISOString(),
     };
 
@@ -290,7 +304,10 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
     value: ResumeBasicInfo[K]
   ) {
     if (!parsed) return;
-    setParsed({ ...parsed, basic_info: { ...parsed.basic_info, [field]: value } });
+    setParsed({
+      ...parsed,
+      basic_info: { ...parsed.basic_info, [field]: value },
+    });
   }
 
   function handleChangeBasicLocation<K extends keyof ResumeLocation>(
@@ -337,9 +354,7 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                         uploading || isDragging ? styles.dropzoneActive : ""
                       }`}
                       onClick={() =>
-                        document
-                          .getElementById("resume-upload-input")
-                          ?.click()
+                        document.getElementById("resume-upload-input")?.click()
                       }
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -359,9 +374,7 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                         }
                       }}
                     >
-                      <div className={styles.dropzoneIcon}>
-                        📄
-                      </div>
+                      <div className={styles.dropzoneIcon}>📄</div>
                       <p className={styles.dropzoneLabel}>
                         Drop your resume here or click to browse
                       </p>
@@ -392,8 +405,9 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                         </p>
                       </div>
                       <div className={styles.filePreviewActions}>
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
                           className={styles.changeFileButton}
                           onClick={() =>
                             document
@@ -403,14 +417,14 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                           disabled={uploading}
                         >
                           Change file
-                        </button>
-                        <PrimaryButton
+                        </Button>
+                        <Button
                           type="submit"
-                          disabled={uploading}
                           className={styles.compactButton}
+                          disabled={uploading}
                         >
                           {uploading ? "Parsing..." : "Upload & parse"}
-                        </PrimaryButton>
+                        </Button>
                       </div>
                     </div>
                     <div className={styles.filePreviewBody}>
@@ -426,8 +440,8 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                             <span>CV</span>
                           </div>
                           <p className={styles.fileMeta}>
-                            Preview unavailable for this file type, but it&apos;s
-                            ready for parsing.
+                            Preview unavailable for this file type, but
+                            it&apos;s ready for parsing.
                           </p>
                         </div>
                       )}
@@ -442,7 +456,6 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                   </div>
                 )}
               </div>
-
 
               {uploading && (
                 <div className={styles.parsingOverlay}>
@@ -463,7 +476,8 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
               <div>
                 <h2>Review parsed profile</h2>
                 <p>
-                  Edit any field below before we use this profile for interviews.
+                  Edit any field below before we use this profile for
+                  interviews.
                 </p>
               </div>
             </div>
@@ -474,110 +488,110 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                 <div className={styles.fieldGrid}>
                   <div>
                     <p className={styles.fieldLabel}>First name</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.first_name}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("first_name", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>Last name</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.last_name}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("last_name", e.target.value)
                       }
                     />
                   </div>
                   <div className={styles.fieldFull}>
                     <p className={styles.fieldLabel}>Headline / full name</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.full_name}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("full_name", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>Email</p>
-                    <TextInput
+                    <Input
                       type="email"
                       value={parsed.basic_info.email}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("email", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>Phone</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.phone}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("phone", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>LinkedIn</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.linkedin}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("linkedin", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>GitHub</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.github}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("github", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>Portfolio</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.portfolio}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasic("portfolio", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>City</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.location.city}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasicLocation("city", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>State</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.location.state}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasicLocation("state", e.target.value)
                       }
                     />
                   </div>
                   <div>
                     <p className={styles.fieldLabel}>Country</p>
-                    <TextInput
+                    <Input
                       value={parsed.basic_info.location.country}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         handleChangeBasicLocation("country", e.target.value)
                       }
                     />
                   </div>
                   <div className={styles.fieldFull}>
                     <p className={styles.fieldLabel}>Summary</p>
-                    <textarea
+                    <Textarea
                       className={styles.textarea}
                       value={parsed.basic_info.summary}
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                         handleChangeBasic("summary", e.target.value)
                       }
                     />
@@ -604,8 +618,8 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                   </div>
                 ) : (
                   <p className={styles.arrayEmpty}>
-                    No skills parsed yet. We&apos;ll infer these from your resume
-                    once you upload it.
+                    No skills parsed yet. We&apos;ll infer these from your
+                    resume once you upload it.
                   </p>
                 )}
               </section>
@@ -621,8 +635,7 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                             {role.job_title} @ {role.company}
                           </span>
                           <span className={styles.arrayItemMeta}>
-                            {role.location} • {role.start_date} →
-                            {" "}
+                            {role.location} • {role.start_date} →{" "}
                             {role.currently_working ? "Present" : role.end_date}
                           </span>
                         </div>
@@ -685,7 +698,9 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                             {project.role} • {project.technologies.join(", ")}
                           </span>
                         </div>
-                        <p className={styles.statusText}>{project.description}</p>
+                        <p className={styles.statusText}>
+                          {project.description}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -710,7 +725,8 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                         </div>
                         <p className={styles.statusText}>
                           Issued: {cert.issue_date}
-                          {cert.expiry_date && ` • Expires: ${cert.expiry_date}`}
+                          {cert.expiry_date &&
+                            ` • Expires: ${cert.expiry_date}`}
                         </p>
                       </div>
                     ))}
@@ -740,9 +756,7 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                     ))}
                   </div>
                 ) : (
-                  <p className={styles.arrayEmpty}>
-                    No languages parsed yet.
-                  </p>
+                  <p className={styles.arrayEmpty}>No languages parsed yet.</p>
                 )}
               </section>
 
@@ -799,7 +813,9 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
                   <div className={styles.arrayList}>
                     {parsed.interests.map((interest, index) => (
                       <div key={index} className={styles.arrayItem}>
-                        <span className={styles.arrayItemTitle}>{interest}</span>
+                        <span className={styles.arrayItemTitle}>
+                          {interest}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -810,18 +826,17 @@ export function ResumeIntake({ apiUrl, onSubmitParsed, onResumeUploaded }: Resum
             </div>
 
             <div className={styles.footerRow}>
-              <PrimaryButton
+              <Button
                 type="submit"
                 disabled={!parsed}
-                fullWidth
                 className={styles.compactButton}
               >
                 Save parsed profile
-              </PrimaryButton>
+              </Button>
             </div>
             <p className={styles.footerNote}>
-              You&apos;re always in control. We never overwrite your data without
-              your confirmation.
+              You&apos;re always in control. We never overwrite your data
+              without your confirmation.
             </p>
           </form>
         )}

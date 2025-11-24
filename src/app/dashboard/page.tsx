@@ -13,13 +13,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function checkResumeStatus() {
-
-          const { data } = await supabase.auth.getSession();
-          console.log("Access" , data.session?.access_token);
+      const { data } = await supabase.auth.getSession();
+      console.log("Access", data.session?.access_token);
 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
         if (user) {
           const { data: profileData } = await supabase
             .from("users")
@@ -48,7 +49,7 @@ export default function DashboardPage() {
   return (
     <div>
       <main className={styles.dashboardPage}>
-        <div className={`container ${styles.dashboardContainer}`}>
+        <div className={styles.dashboardContainer}>
           {loading ? (
             <div className={styles.loading}>
               <p>Loading...</p>
@@ -62,6 +63,8 @@ export default function DashboardPage() {
               >
                 Start Mock Interview
               </button>
+
+              <ResumeIntake />
             </div>
           )}
         </div>

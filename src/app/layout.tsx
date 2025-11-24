@@ -1,11 +1,29 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { MainNavbar } from "@/components/main-navbar";
+import localFont from "next/font/local";
+import { Navbar } from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const circular = localFont({
+  src: [
+    {
+      path: "./fonts/CircularStd-Book.otf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-custom",
+});
+
+const sourceCodePro = localFont({
+  src: [
+    {
+      path: "./fonts/SourceCodePro-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-source-code-pro",
 });
 
 export const metadata: Metadata = {
@@ -21,11 +39,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
-        <MainNavbar />
-        <main className="main-content">
-          {children}
-        </main>
+      <body
+        className={`${circular.variable} ${sourceCodePro.variable} font-sans antialiased`}
+      >
+        <ThemeProvider>
+          <Navbar />
+          <main className="main-content">{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );

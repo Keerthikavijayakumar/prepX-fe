@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PrimaryButton } from "@/components/shared/primary-button";
 import { supabase } from "@/lib/supabaseClient";
-import styles from "./OtpPanel.module.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type OtpPanelProps = {
   email: string;
@@ -92,44 +93,64 @@ export function OtpPanel({
   }
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.headerRow}>
-        <h3 className={styles.title}>Enter verification code</h3>
+    <div className="space-y-4 text-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold tracking-tight">
+            Enter your 6-digit code
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            We just sent it to{" "}
+            <span className="font-medium text-foreground">{email}</span>.
+          </p>
+        </div>
         {onEditEmail && (
-          <button type="button" className={styles.edit} onClick={onEditEmail}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="px-2 text-xs"
+            onClick={onEditEmail}
+          >
             Edit email
-          </button>
+          </Button>
         )}
       </div>
-      <p className={styles.subtitle}>
-        We sent a one-time code to <span className={styles.email}>{email}</span>
-        .
-      </p>
-      <div className={styles.inputRow}>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength={6}
-          value={code}
-          onChange={(event) =>
-            setCode(event.target.value.replace(/[^0-9]/g, ""))
-          }
-          className={styles.input}
-          placeholder="●●●●●●"
-        />
-        <PrimaryButton
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex-1 space-y-1.5">
+          <Label
+            htmlFor="otp-code"
+            className="text-xs font-medium text-foreground"
+          >
+            6-digit code
+          </Label>
+          <Input
+            id="otp-code"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={code}
+            onChange={(event) =>
+              setCode(event.target.value.replace(/[^0-9]/g, ""))
+            }
+            className="font-mono tracking-[0.35em] text-base"
+            placeholder="••••••"
+          />
+        </div>
+        <Button
           type="button"
-          className={styles.verifyButton}
+          className="mt-1 w-full sm:mt-0 sm:w-auto"
           disabled={isVerifying}
           onClick={handleVerify}
         >
           {isVerifying ? "Verifying..." : "Verify code"}
-        </PrimaryButton>
+        </Button>
       </div>
-      <div className={styles.meta}>
-        <button
+      <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <Button
           type="button"
-          className={styles.link}
+          variant="link"
+          className="h-auto p-0 text-xs"
           onClick={handleResend}
           disabled={resendSeconds > 0 || isResending}
         >
@@ -138,8 +159,8 @@ export function OtpPanel({
             : resendSeconds > 0
             ? `Resend in ${resendSeconds}s`
             : "Resend code"}
-        </button>
-        <span className={styles.timer}>
+        </Button>
+        <span className="text-[11px] sm:text-xs">
           {expirySeconds > 0
             ? `Code expires in ${Math.floor(expirySeconds / 60)}:${String(
                 expirySeconds % 60
@@ -147,7 +168,7 @@ export function OtpPanel({
             : "Code has expired. Request a new code."}
         </span>
       </div>
-      {error && <p className={styles.error}>{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

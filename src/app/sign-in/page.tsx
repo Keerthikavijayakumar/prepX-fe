@@ -1,12 +1,22 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { OtpPanel } from "@/components/otp-panel";
-import { PrimaryButton } from "@/components/shared/primary-button";
-import { TextInput } from "@/components/shared/text-input";
+import { OtpPanel } from "@/components/OtpPanel";
 import { supabase } from "@/lib/supabaseClient";
-import styles from "./page.module.css";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -18,6 +28,21 @@ export default function SignInPage() {
   const [needsName, setNeedsName] = useState(false);
   const [name, setName] = useState("");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const isEmailStep = !needsName && !showOtp;
+  const isOtpStep = !needsName && showOtp;
+  const isNameStep = needsName;
+
+  const cardTitle = isNameStep
+    ? "Complete your profile"
+    : isOtpStep
+    ? "Verify your email"
+    : "Welcome back";
+
+  const cardDescription = isNameStep
+    ? "Add your name so we can personalize interview feedback and reports."
+    : isOtpStep
+    ? "For security, we use a short-lived 6-digit code instead of passwords."
+    : "Sign in with a one-time code — no passwords, no friction.";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -139,110 +164,136 @@ export default function SignInPage() {
   }
 
   return (
-    <div>
-      <main className={styles["signin-page"]}>
-        <div className={`container ${styles["signin-container"]}`}>
-          <div className={styles["signin-card"]}>
-            <div className="signin-left">
-              <div className={styles["signin-badge"]}>Private beta access</div>
-              <h1>Sign in to continue your mock interview.</h1>
-              <p>
-                One secure link to your inbox. No passwords, no friction. Enter
-                your email to resume your DevMock.ai profile.
-              </p>
-              <div className={styles["signin-highlight-grid"]}>
-                <div>
-                  <h3>For existing candidates</h3>
-                  <p>Pick up exactly where you left off.</p>
-                </div>
-                <div>
-                  <h3>No password fatigue</h3>
-                  <p>Just a short-lived magic code, built for security.</p>
-                </div>
+    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl">
+        <div className="relative left-1/2 aspect-[1108/632] w-[72rem] -translate-x-1/2 bg-gradient-to-tr from-primary/30 via-emerald-500/10 to-sky-500/30 opacity-30" />
+      </div>
+
+      <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-12 md:flex-row md:items-center md:justify-between lg:py-16">
+        {/* Left: narrative copy */}
+        <div className="max-w-md space-y-6">
+          <Badge className="border-primary/30 bg-primary/10 text-xs font-medium text-primary">
+            Private beta · Passwordless access
+          </Badge>
+          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+            Sign in to continue your DevMock.ai interview journey.
+          </h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            One secure magic link to your inbox. No passwords, no friction.
+            Resume system design, coding, or behavioral sessions exactly where
+            you left off.
+          </p>
+
+          <div className="grid gap-4 text-sm text-muted-foreground sm:grid-cols-2">
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-foreground">
+                For existing candidates
               </div>
+              <p>Pick up your previous mock interviews in a single click.</p>
             </div>
-            <div className={styles["signin-right"]}>
-              <div className={styles["signin-panel"]}>
-                <h2>Welcome back</h2>
-                {needsName ? (
-                  <>
-                    <p>
-                      Tell us your name so we can personalize your sessions.
-                    </p>
-                    <form
-                      className={styles["signin-form"]}
-                      onSubmit={handleNameSubmit}
-                    >
-                      <div className={styles["signin-field"]}>
-                        <label htmlFor="full-name">Full name</label>
-                        <TextInput
-                          id="full-name"
-                          name="full-name"
-                          type="text"
-                          placeholder="Ada Lovelace"
-                          value={name}
-                          onChange={(event) => setName(event.target.value)}
-                        />
-                      </div>
-                      <PrimaryButton
-                        type="submit"
-                        className={styles["signin-submit"]}
-                        fullWidth
-                        disabled={isUpdatingName}
-                      >
-                        {isUpdatingName ? "Saving..." : "Continue"}
-                      </PrimaryButton>
-                      {error && (
-                        <p className={styles["signin-error"]}>{error}</p>
-                      )}
-                    </form>
-                  </>
-                ) : !showOtp ? (
-                  <>
-                    <p>
-                      Enter your email and we&apos;ll send you a one-time code.
-                    </p>
-                    <form
-                      className={styles["signin-form"]}
-                      onSubmit={handleSubmit}
-                    >
-                      <div className={styles["signin-field"]}>
-                        <label htmlFor="email">Email address</label>
-                        <TextInput
-                          id="email"
-                          name="email"
-                          type="email"
-                          placeholder="you@example.com"
-                          value={email}
-                          onChange={(event) => setEmail(event.target.value)}
-                        />
-                      </div>
-                      <PrimaryButton
-                        type="submit"
-                        className={styles["signin-submit"]}
-                        fullWidth
-                        disabled={isSending}
-                      >
-                        {isSending ? "Sending..." : "Send code"}
-                      </PrimaryButton>
-                      {error && (
-                        <p className={styles["signin-error"]}>{error}</p>
-                      )}
-                    </form>
-                  </>
-                ) : (
-                  <OtpPanel
-                    email={email}
-                    onEditEmail={() => setShowOtp(false)}
-                    shouldCreateUser={true}
-                    onVerified={handleOtpVerified}
-                  />
-                )}
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-foreground">
+                Enterprise-grade security
               </div>
+              <p>Short-lived OTP codes, built for modern security teams.</p>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Right: auth card */}
+        <div className="w-full max-w-md">
+          <Card className="border-border/70 bg-card/90 shadow-lg shadow-black/10 backdrop-blur">
+            <CardHeader>
+              <CardTitle>{cardTitle}</CardTitle>
+              <CardDescription>{cardDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {needsName ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Tell us your name so we can personalize your sessions.
+                  </p>
+                  <form className="space-y-4" onSubmit={handleNameSubmit}>
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="full-name"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Full name
+                      </Label>
+                      <Input
+                        id="full-name"
+                        name="full-name"
+                        type="text"
+                        placeholder="Ada Lovelace"
+                        value={name}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setName(event.target.value)
+                        }
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2"
+                      disabled={isUpdatingName}
+                    >
+                      {isUpdatingName && <Spinner className="size-3.5" />}
+                      <span>{isUpdatingName ? "Saving..." : "Continue"}</span>
+                    </Button>
+                    {error && (
+                      <p className="text-xs text-destructive">{error}</p>
+                    )}
+                  </form>
+                </>
+              ) : !showOtp ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Enter your email and we&apos;ll send you a one-time code.
+                  </p>
+                  <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Email address
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setEmail(event.target.value)
+                        }
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2"
+                      disabled={isSending}
+                    >
+                      {isSending && <Spinner className="size-3.5" />}
+                      <span>{isSending ? "Sending..." : "Send code"}</span>
+                    </Button>
+                    {error && (
+                      <p className="text-xs text-destructive">{error}</p>
+                    )}
+                  </form>
+                </>
+              ) : (
+                <OtpPanel
+                  email={email}
+                  onEditEmail={() => setShowOtp(false)}
+                  shouldCreateUser={true}
+                  onVerified={handleOtpVerified}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </main>
   );
 }
