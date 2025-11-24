@@ -70,37 +70,35 @@
 }
 
 .dark {
-  /* Dark Mode - Custom Color Palette */
-  --background: rgb(12, 43, 78);
-  --foreground: rgb(244, 244, 244);
-  
-  --card: rgb(26, 61, 100);
-  --card-foreground: rgb(244, 244, 244);
-  
-  --popover: rgb(26, 61, 100);
-  --popover-foreground: rgb(244, 244, 244);
-  
-  /* Light color as primary in dark mode */
-  --primary: rgb(244, 244, 244);
-  --primary-foreground: rgb(12, 43, 78);
-  
-  /* Teal as secondary */
-  --secondary: rgb(29, 84, 108);
-  --secondary-foreground: rgb(244, 244, 244);
-  
-  --muted: rgba(244, 244, 244, 0.1);
-  --muted-foreground: rgba(244, 244, 244, 0.7);
-  
-  /* Medium blue as accent */
-  --accent: rgb(26, 61, 100);
-  --accent-foreground: rgb(244, 244, 244);
-  
-  --destructive: rgb(239, 68, 68);
-  --destructive-foreground: rgb(244, 244, 244);
-  
-  --border: rgba(244, 244, 244, 0.2);
-  --input: rgba(244, 244, 244, 0.2);
-  --ring: rgba(244, 244, 244, 0.3);
+  /* Dark Mode - Neutral / Near-black palette */
+  --background: #050505;
+  --foreground: #f9fafb;
+
+  --card: #111827;
+  --card-foreground: #e5e7eb;
+
+  --popover: #020617;
+  --popover-foreground: #e5e7eb;
+
+  /* Keep primary as bright accent on dark */
+  --primary: #6366f1;
+  --primary-foreground: #f9fafb;
+
+  --secondary: #1f2937;
+  --secondary-foreground: #e5e7eb;
+
+  --muted: rgba(15, 23, 42, 0.8);
+  --muted-foreground: #9ca3af;
+
+  --accent: #1f2937;
+  --accent-foreground: #e5e7eb;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #f9fafb;
+
+  --border: rgba(148, 163, 184, 0.4);
+  --input: rgba(31, 41, 55, 0.7);
+  --ring: rgba(129, 140, 248, 0.4);
 }
 
 @layer base {
@@ -123,8 +121,6 @@ html {
 }
 
 body {
-  background-color: #050505;
-  color: #ffffff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
@@ -162,23 +158,81 @@ ul {
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: #ffffff;
   border: none;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.35);
+}
+
+.dark .btn-primary {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.dark .btn-primary:hover {
   box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
 }
 
 .btn-outline {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  transition: all 0.3s ease;
 }
 
 .btn-outline:hover {
-  border-color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+/* Light mode - subtle gradient */
+body:not(.dark) {
+  background: radial-gradient(
+      circle at top,
+      rgba(12, 43, 78, 0.03),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(29, 84, 108, 0.04),
+      transparent 60%
+    ),
+    var(--background);
+}
+
+/* Dark mode - more pronounced gradient */
+body.dark {
+  background: radial-gradient(
+      circle at top,
+      rgba(129, 140, 248, 0.15),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(16, 185, 129, 0.15),
+      transparent 50%
+    ),
+    var(--background);
+}
+
+.main-content {
+  padding-top: 100px;
+  min-height: calc(100vh - 100px);
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding-top: 90px;
+    min-height: calc(100vh - 90px);
+  }
 }
 
 .text-gradient {

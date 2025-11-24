@@ -23,7 +23,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <MainNavbar />
-        {children}
+        <main className="main-content">
+          {children}
+        </main>
       </body>
     </html>
   );

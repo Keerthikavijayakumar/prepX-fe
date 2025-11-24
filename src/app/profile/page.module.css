@@ -1,14 +1,6 @@
 .profilePage {
   min-height: 100vh;
-  padding-top: 120px;
   padding-bottom: 80px;
-  background: radial-gradient(
-      circle at top,
-      rgba(129, 140, 248, 0.25),
-      transparent 55%
-    ),
-    radial-gradient(circle at bottom, rgba(16, 185, 129, 0.18), transparent 55%),
-    #050505;
 }
 
 .profileContainer {
@@ -31,10 +23,26 @@
       rgba(16, 185, 129, 0.2),
       transparent 55%
     ),
-    rgba(15, 15, 15, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+    var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(24px);
+}
+
+.dark .profileCard {
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+}
+
+.profileCardLoading {
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.3),
+    0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.dark .profileCardLoading {
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.4),
+    0 30px 90px rgba(15, 23, 42, 0.95);
 }
 
 .profileHeader {
@@ -53,7 +61,7 @@
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e5e7eb;
+  color: var(--card-foreground);
   background: radial-gradient(
       circle at 30% 0%,
       rgba(129, 140, 248, 0.85),
@@ -61,6 +69,21 @@
     ),
     rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(129, 140, 248, 0.7);
+}
+
+.avatarSkeleton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.35),
+    rgba(16, 185, 129, 0.25),
+    rgba(15, 23, 42, 0.9)
+  );
+  background-size: 200% 200%;
+  animation: shimmer 1.1s ease-in-out infinite;
 }
 
 .headerText h1 {
@@ -77,15 +100,15 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #a5b4fc;
-  background: rgba(79, 70, 229, 0.12);
-  border: 1px solid rgba(129, 140, 248, 0.4);
+  color: var(--primary);
+  background: var(--muted);
+  border: 1px solid var(--border);
   margin-bottom: 6px;
 }
 
 .subtitle {
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--muted-foreground);
 }
 
 .detailsGrid {
@@ -106,30 +129,75 @@
   align-items: baseline;
   gap: 16px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+  border-bottom: 1px solid var(--border);
 }
 
 .label {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #6b7280;
+  color: var(--muted-foreground);
 }
 
 .value {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #e5e7eb;
+  color: var(--card-foreground);
+}
+
+.skeletonValue {
+  display: inline-block;
+  min-width: 5.5rem;
+  max-width: 9rem;
+  height: 1.1em;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.15),
+    rgba(148, 163, 184, 0.5),
+    rgba(148, 163, 184, 0.15)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.1s ease-in-out infinite;
+}
+
+.skeletonParagraph {
+  width: 100%;
+  height: 0.9em;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.15),
+    rgba(148, 163, 184, 0.5),
+    rgba(148, 163, 184, 0.15)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.1s ease-in-out infinite;
+  margin-bottom: 8px;
+}
+
+.dark .skeletonValue,
+.dark .skeletonParagraph {
+  background: linear-gradient(90deg, #111827, #1f2937, #111827);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .muted {
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--muted-foreground);
 }
 
 .error {
   font-size: 0.9rem;
-  color: #fecaca;
+  color: var(--destructive);
 }
 
 .stateRow {
@@ -154,7 +222,6 @@
 
 @media (max-width: 640px) {
   .profilePage {
-    padding-top: 110px;
     padding-bottom: 40px;
   }
 

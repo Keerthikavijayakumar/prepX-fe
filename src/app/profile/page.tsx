@@ -74,13 +74,86 @@ export default function ProfilePage() {
     profile?.email?.trim()?.charAt(0)?.toUpperCase() ??
     "?";
 
+  const detailsContent = loading ? (
+    <div className={styles.detailsGrid}>
+      <div className={styles.detailGroup}>
+        <h2>Basic info</h2>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Name</span>
+          <span className={styles.skeletonValue} />
+        </div>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Email</span>
+          <span className={styles.skeletonValue} />
+        </div>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Member since</span>
+          <span className={styles.skeletonValue} />
+        </div>
+      </div>
+
+      <div className={styles.detailGroup}>
+        <h2>Interview context</h2>
+        <p className={styles.skeletonParagraph} />
+        <p className={styles.skeletonParagraph} />
+      </div>
+    </div>
+  ) : error ? (
+    <div className={styles.stateRow}>
+      <p className={styles.error}>{error}</p>
+    </div>
+  ) : (
+    <div className={styles.detailsGrid}>
+      <div className={styles.detailGroup}>
+        <h2>Basic info</h2>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Name</span>
+          <span className={styles.value}>
+            {profile?.name || "Not set yet"}
+          </span>
+        </div>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Email</span>
+          <span className={styles.value}>{profile?.email}</span>
+        </div>
+        <div className={styles.detailRow}>
+          <span className={styles.label}>Member since</span>
+          <span className={styles.value}>
+            {profile?.createdAt
+              ? new Date(profile.createdAt).toLocaleDateString()
+              : "Just now"}
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.detailGroup}>
+        <h2>Interview context</h2>
+        <p className={styles.muted}>
+          Soon you&apos;ll be able to configure your target roles, seniority
+          level, and preferred companies here so every mock interview feels
+          tailored to a real on-site.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <main className={styles.profilePage}>
         <div className={`container ${styles.profileContainer}`}>
-          <section className={styles.profileCard}>
+          <section
+            className={`${styles.profileCard} ${
+              loading ? styles.profileCardLoading : ""
+            }`}
+          >
             <div className={styles.profileHeader}>
-              <div className={styles.avatar}>{displayInitial}</div>
+              <div className={styles.avatar}>
+                {loading ? (
+                  <span className={styles.avatarSkeleton} />
+                ) : (
+                  displayInitial
+                )}
+              </div>
               <div className={styles.headerText}>
                 <p className={styles.badge}>Profile</p>
                 <h1>Your account</h1>
@@ -90,53 +163,14 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {loading ? (
-              <div className={styles.stateRow}>
-                <p className={styles.muted}>Loading your profile...</p>
-              </div>
-            ) : error ? (
-              <div className={styles.stateRow}>
-                <p className={styles.error}>{error}</p>
-              </div>
-            ) : (
-              <div className={styles.detailsGrid}>
-                <div className={styles.detailGroup}>
-                  <h2>Basic info</h2>
-                  <div className={styles.detailRow}>
-                    <span className={styles.label}>Name</span>
-                    <span className={styles.value}>
-                      {profile?.name || "Not set yet"}
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.label}>Email</span>
-                    <span className={styles.value}>{profile?.email}</span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.label}>Member since</span>
-                    <span className={styles.value}>
-                      {profile?.createdAt
-                        ? new Date(profile.createdAt).toLocaleDateString()
-                        : "Just now"}
-                    </span>
-                  </div>
-                </div>
+            {detailsContent}
 
-                <div className={styles.detailGroup}>
-                  <h2>Interview context</h2>
-                  <p className={styles.muted}>
-                    Soon you&apos;ll be able to configure your target roles,
-                    seniority level, and preferred companies here so every mock
-                    interview feels tailored to a real on-site.
-                  </p>
-                </div>
-              </div>
-            )}
             <div className={styles.actionsRow}>
               <button
                 type="button"
                 className="btn btn-outline"
                 onClick={handleSignOut}
+                disabled={loading}
               >
                 Sign out
               </button>

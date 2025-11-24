@@ -45,7 +45,7 @@
 
 .hero p {
   font-size: 1.2rem;
-  color: #a1a1aa;
+  color: var(--muted-foreground);
   margin-bottom: 40px;
   max-width: 600px;
   margin-left: auto;
@@ -60,10 +60,10 @@
 }
 
 .ide-mockup {
-  background: #0d0d0d;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
   max-width: 900px;
   margin: 0 auto;
   overflow: hidden;
@@ -72,13 +72,17 @@
   position: relative;
 }
 
+.dark .ide-mockup {
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+}
+
 .ide-header {
-  background: #1a1a1a;
+  background: var(--muted);
   padding: 12px 20px;
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border);
 }
 
 .dot {
@@ -101,7 +105,7 @@
 
 .ide-body {
   padding: 30px;
-  color: #d4d4d4;
+  color: var(--card-foreground);
   font-size: 0.9rem;
 }
 
@@ -143,7 +147,7 @@
 
 .features {
   padding: 100px 0;
-  background: #0a0a0a;
+  background: var(--background);
 }
 
 .section-title {
@@ -157,7 +161,7 @@
 }
 
 .section-title p {
-  color: #a1a1aa;
+  color: var(--muted-foreground);
 }
 
 .grid {
@@ -167,8 +171,8 @@
 }
 
 .card {
-  background: #121212;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card);
+  border: 1px solid var(--border);
   padding: 40px;
   border-radius: 16px;
   transition: 0.3s;
@@ -198,14 +202,14 @@
 }
 
 .card p {
-  color: #a1a1aa;
+  color: var(--muted-foreground);
   font-size: 0.95rem;
 }
 
 .stats {
   padding: 80px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   text-align: center;
 }
 
@@ -218,12 +222,12 @@
 
 .stat-item h3 {
   font-size: 3rem;
-  color: #ffffff;
+  color: var(--foreground);
   margin-bottom: 5px;
 }
 
 .stat-item p {
-  color: #a1a1aa;
+  color: var(--muted-foreground);
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -232,7 +236,7 @@
 .footer {
   padding: 60px 0;
   text-align: center;
-  color: #a1a1aa;
+  color: var(--muted-foreground);
   font-size: 0.9rem;
 }
 

@@ -3,61 +3,68 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { ResumeIntake } from "@/components/resume-intake";
+import styles from "./page.module.css";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any | null>(null);
+  const [hasResume, setHasResume] = useState<boolean>(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (error || !data.user) {
-        router.replace("/sign-in");
-        return;
-      }
-      setUser(data.user);
-      setLoading(false);
-    });
-  }, [router]);
+    async function checkResumeStatus() {
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.replace("/sign-in");
-  }
+          const { data } = await supabase.auth.getSession();
+          console.log("Access" , data.session?.access_token);
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: profileData } = await supabase
+            .from("users")
+            .select("resume_id")
+            .eq("id", user.id)
+            .single();
+
+          setHasResume(!!profileData?.resume_id);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Error checking resume status:", err);
+        setLoading(false);
+      }
+    }
+
+    checkResumeStatus();
+  }, []);
+
+  const handleStartInterview = () => {
+    // Simple room id for now; can switch to UUID later
+    const roomId = `interview_${Date.now()}`;
+    router.push(`/interview/${roomId}`);
+  };
 
   return (
     <div>
-      <main className="container" style={{ padding: "2rem 1rem" }}>
-        {loading ? (
-          <p>Loading your profile...</p>
-        ) : error ? (
-          <p>{error}</p>
-        ) : (
-          <div>
-            <h1>Dashboard</h1>
-            <p>You are signed in as:</p>
-            <pre
-              style={{
-                background: "#111827",
-                color: "#e5e7eb",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                overflowX: "auto",
-                fontSize: "0.85rem",
-              }}
-            >
-              {JSON.stringify(user, null, 2)}
-            </pre>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              style={{ marginTop: "1rem" }}
-            >
-              Sign out
-            </button>
-          </div>
-        )}
+      <main className={styles.dashboardPage}>
+        <div className={`container ${styles.dashboardContainer}`}>
+          {loading ? (
+            <div className={styles.loading}>
+              <p>Loading...</p>
+            </div>
+          ) : (
+            <div className={styles.dashboardContent}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleStartInterview}
+              >
+                Start Mock Interview
+              </button>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

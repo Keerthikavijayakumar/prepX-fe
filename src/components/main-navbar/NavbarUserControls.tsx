@@ -11,9 +11,12 @@ type NavbarUser = {
   email: string | null;
 };
 
+type ThemeMode = "light" | "dark";
+
 export function NavbarUserControls() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<NavbarUser | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>("dark");
 
   useEffect(() => {
     let isMounted = true;
@@ -67,12 +70,74 @@ export function NavbarUserControls() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const stored = window.localStorage.getItem("theme");
+    const initial: ThemeMode =
+      stored === "light" || stored === "dark" ? (stored as ThemeMode) : "dark";
+
+    setTheme(initial);
+    if (initial === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  function toggleTheme() {
+    setTheme((prev) => {
+      const next: ThemeMode = prev === "dark" ? "light" : "dark";
+
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        if (next === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        window.localStorage.setItem("theme", next);
+      }
+
+      return next;
+    });
+  }
+
   if (loading) {
-    return <StartInterviewButton />;
+    return (
+      <div className={styles.userControls}>
+        <div className={styles.navButtonWrapper}>
+          <StartInterviewButton />
+        </div>
+        <button
+          type="button"
+          className={styles.themeToggle}
+          onClick={toggleTheme}
+          aria-label="Toggle color theme"
+        >
+          {theme === "dark" ? "Dark" : "Light"}
+        </button>
+      </div>
+    );
   }
 
   if (!user) {
-    return <StartInterviewButton />;
+    return (
+      <div className={styles.userControls}>
+        <div className={styles.navButtonWrapper}>
+          <StartInterviewButton />
+        </div>
+        <button
+          type="button"
+          className={styles.themeToggle}
+          onClick={toggleTheme}
+          aria-label="Toggle color theme"
+        >
+          {theme === "dark" ? "Dark" : "Light"}
+        </button>
+      </div>
+    );
   }
 
   const initial =
@@ -82,9 +147,19 @@ export function NavbarUserControls() {
 
   return (
     <div className={styles.userControls}>
-      <Link href="/dashboard" className="btn btn-primary">
-        Dashboard
-      </Link>
+      <div className={styles.navButtonWrapper}>
+        <Link href="/dashboard" className="btn btn-primary">
+          Dashboard
+        </Link>
+      </div>
+      <button
+        type="button"
+        className={styles.themeToggle}
+        onClick={toggleTheme}
+        aria-label="Toggle color theme"
+      >
+        {theme === "dark" ? "Dark" : "Light"}
+      </button>
       <Link
         href="/profile"
         className={styles.avatarButton}

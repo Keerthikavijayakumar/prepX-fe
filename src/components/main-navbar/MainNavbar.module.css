@@ -3,9 +3,9 @@
   top: 0;
   width: 100%;
   z-index: 1000;
-  background: rgba(5, 5, 5, 0.8);
+  background: var(--background);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 
 .nav {
@@ -33,19 +33,38 @@
 }
 
 .navLinks a {
-  color: #a1a1aa;
+  color: var(--muted-foreground);
   font-size: 0.9rem;
   font-weight: 500;
 }
 
 .navLinks a:hover {
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 .userControls {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.navButtonWrapper :global(.btn) {
+  padding: 6px 16px;
+  font-size: 0.8rem;
+}
+
+.themeToggle {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.themeToggle:hover {
+  border-color: #e5e7eb;
 }
 
 .avatarButton {

@@ -1,0 +1,98 @@
+.dashboardPage {
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.dashboardContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.dashboardContent {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 0.9rem;
+  color: var(--destructive);
+}
+
+
+.dashboardSections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.resumeStatus {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.dark .resumeStatus {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.resumeStatus h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 12px;
+}
+
+.resumeStatusText {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.updateResumeButton {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.updateResumeButton:hover {
+  border-color: var(--primary);
+  background: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .dashboardPage {
+    padding-bottom: 40px;
+  }
+  
+
+  .resumeStatus {
+    padding: 16px;
+  }
+}

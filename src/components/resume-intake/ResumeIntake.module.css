@@ -1,0 +1,849 @@
+.root {
+  padding-top: 0;
+  padding-bottom: 80px;
+  contain: layout style;
+}
+
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.uploadCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(12, 43, 78, 0.04), 0 4px 12px rgba(12, 43, 78, 0.04);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  will-change: transform;
+  contain: layout style;
+}
+
+.uploadCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(12, 43, 78, 0.08);
+}
+
+.uploadCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.dark .uploadCard {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 16px 48px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(16px);
+}
+
+.uploadHeader {
+  margin-bottom: 16px;
+}
+
+.uploadHeader h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.titleBlock h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.titleBlock p {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.statusBadge {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  color: var(--primary);
+  background: linear-gradient(135deg, var(--muted), var(--muted)/0.8);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(12, 43, 78, 0.04);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+}
+
+.compactButton {
+  padding: 8px 18px;
+  font-size: 0.85rem;
+}
+
+.uploadBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fileStage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--muted);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, border-color;
+  contain: layout style;
+}
+
+.dropzone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary)/0.02, var(--accent)/0.03);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--primary);
+  background: var(--card);
+  transform: translateY(-1px);
+}
+
+.dropzone:hover::before {
+  opacity: 1;
+}
+
+.dark .dropzone:hover {
+  background: var(--accent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+.dropzoneIcon {
+  font-size: 1.75rem;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+
+.dropzone:hover .dropzoneIcon {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.dropzoneActive {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--ring);
+  transform: scale(1.01);
+}
+
+.dropzoneLabel {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin: 0;
+  font-family: var(--font-sans);
+  transition: color 0.2s ease;
+}
+
+.dropzone:hover .dropzoneLabel {
+  color: var(--primary);
+}
+
+.dropzoneHint {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin: 0;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.dropzone:hover .dropzoneHint {
+  color: var(--foreground);
+}
+
+.filePreviewCard {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(12, 43, 78, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.filePreviewCard:hover {
+  box-shadow: 0 4px 12px rgba(12, 43, 78, 0.08);
+  border-color: var(--primary);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filePreviewHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: none;
+  animation: slideInFade 0.4s ease-out;
+  contain: layout style;
+}
+
+.filePreviewHeaderMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.filePreviewActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+.fileName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
+}
+
+.changeFileButton {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(12, 43, 78, 0.04);
+  will-change: transform;
+}
+
+.changeFileButton:hover {
+  border-color: var(--primary);
+  background: var(--muted);
+  transform: translateY(-1px);
+}
+
+.changeFileButton:active {
+  transform: translateY(0);
+}
+
+.changeFileButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.filePreviewBody {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--background);
+  height: 360px;
+}
+
+.fileFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: var(--background);
+}
+
+.filePreviewFallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.fileIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.35), rgba(16, 185, 129, 0.25));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0b1120;
+}
+
+.fileMeta {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary);
+  background: rgba(12, 43, 78, 0.05);
+  border: 1px solid rgba(12, 43, 78, 0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fileMeta::before {
+  content: '✓';
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.fileError {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--destructive);
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fileError::before {
+  content: '⚠️';
+  font-size: 1rem;
+}
+
+.controlsRow {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.statusPane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.statusLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.statusText {
+  color: var(--muted-foreground);
+}
+
+.statusSuccess {
+  color: #bbf7d0;
+}
+
+.statusError {
+  color: #fecaca;
+}
+
+.stat.uploadCardParsing {
+  position: relative;
+  pointer-events: none;
+}
+
+.statusLoaderBar {
+  position: relative;
+  overflow: hidden;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.statusLoaderInner {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(129, 140, 248, 0), rgba(129, 140, 248, 0.8), rgba(16, 185, 129, 0));
+  background-size: 200% 100%;
+  animation: loader-bar 1.1s linear infinite;
+}
+
+.uploadCardParsing {
+  border-color: rgba(129, 140, 248, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.5),
+    0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.dark .uploadCardParsing {
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.5),
+    0 28px 90px rgba(0, 0, 0, 0.9);
+}
+
+.uploadCardParsing .dropzone,
+.uploadCardParsing .statusPane {
+  filter: none;
+  opacity: 1;
+}
+
+.parsingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.35), rgba(16, 185, 129, 0.25));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.uploadCardParsing .parsingOverlay {
+  opacity: 1;
+}
+
+
+.dark .parsingOverlay {
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6));
+}
+
+.parsingOverlayGlow {
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 0%, rgba(129, 140, 248, 0.3), transparent 60%);
+  opacity: 0.8;
+}
+
+.parsingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.parsingOverlayText {
+  position: relative;
+  font-size: 0.8rem;
+  color: var(--card-foreground);
+}
+
+.parsedShell {
+  padding: 32px 28px 30px;
+  border-radius: 24px;
+  background: radial-gradient(
+      circle at top left,
+      rgba(129, 140, 248, 0.2),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(16, 185, 129, 0.2),
+      transparent 55%
+    ),
+    var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(24px);
+  width: 100%;
+  max-width: none;
+  animation: slideInFade 0.4s ease-out;
+  contain: layout style paint;
+}
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark .parsedShell {
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+}
+
+.parsedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+
+.parsedHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.parsedHeader p {
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.parsedGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.sectionCard {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 24px 20px 20px;
+  box-shadow: 0 1px 3px rgba(12, 43, 78, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.sectionCard:hover {
+  box-shadow: 0 4px 12px rgba(12, 43, 78, 0.08);
+  border-color: var(--primary);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 16px 0;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: var(--card-foreground);
+  min-height: 80px;
+  resize: vertical;
+}
+
+.arrayList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.arrayItem {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  margin-bottom: 8px;
+}
+
+.arrayItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.arrayItemTitle {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.arrayItemMeta {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.arrayEmpty {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.footerRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.footerNote {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+@keyframes loader-bar {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tablet breakpoint */
+@media (max-width: 960px) {
+  .shell,
+  .shellParsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .parsedGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fieldGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 640px) {
+  .root {
+    padding-bottom: 40px;
+  }
+
+  .shell {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .uploadCard,
+  .parsedShell {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .uploadHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .statusBadge {
+    align-self: flex-start;
+  }
+
+  .dropzone {
+    padding: 20px 16px;
+  }
+
+  .dropzoneIcon {
+    font-size: 1.5rem;
+  }
+
+  .uploadHeader h2 {
+    font-size: 1rem;
+  }
+
+  .filePreviewCard {
+    padding: 10px;
+  }
+
+  .filePreviewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .filePreviewActions {
+    align-self: flex-start;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .controlsRow button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .parsedHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sectionCard {
+    padding: 14px 12px 12px;
+  }
+
+  .arrayItem {
+    padding: 10px;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .uploadCard,
+  .parsedShell {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .dropzone {
+    padding: 16px 12px;
+  }
+
+  .dropzoneIcon {
+    font-size: 1.25rem;
+  }
+
+  .uploadHeader h2 {
+    font-size: 0.95rem;
+  }
+
+  .dropzoneLabel {
+    font-size: 0.875rem;
+  }
+
+  .dropzoneHint {
+    font-size: 0.75rem;
+  }
+
+  .uploadHeader p {
+    font-size: 0.85rem;
+  }
+
+  .dropzoneLabel {
+    font-size: 0.85rem;
+  }
+
+  .dropzoneHint {
+    font-size: 0.75rem;
+  }
+
+  .parsedHeader h2 {
+    font-size: 1.25rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.9rem;
+  }
+
+  .fieldLabel {
+    font-size: 0.7rem;
+  }
+}
+
+.footerRow {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.footerNote {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 16px 0 0 0;
+  line-height: 1.5;
+}
