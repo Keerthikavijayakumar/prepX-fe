@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
 
 export function Navbar() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/interview")) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
