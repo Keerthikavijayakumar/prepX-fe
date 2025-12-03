@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, ChangeEvent } from "react";
+import { FileText } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,6 +132,7 @@ export function ResumeIntake({
   const [isDragging, setIsDragging] = useState(false);
   const [step, setStep] = useState<ResumeWizardStep>("profile");
   const [stepError, setStepError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const steps: ResumeWizardStep[] = [
     "profile",
@@ -718,10 +720,59 @@ export function ResumeIntake({
     });
   }
 
-  function handleSubmitParsed(event: FormEvent) {
+  async function handleSubmitParsed(event: FormEvent) {
     event.preventDefault();
     if (!parsed) return;
-    onSubmitParsed?.(parsed);
+
+    setSaving(true);
+    setStatus("Saving parsed resume...");
+    setStatusError(null);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        setStatusError("You must be signed in to save your resume.");
+        setSaving(false);
+        return;
+      }
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const response = await fetch(`${baseUrl}/api/resume/parsed`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ parsed }),
+      });
+
+      if (!response.ok) {
+        let message = "Failed to save parsed resume.";
+        try {
+          const errorBody = (await response.json()) as { message?: string };
+          if (errorBody?.message) {
+            message = errorBody.message;
+          }
+        } catch {
+          // ignore JSON parse errors
+        }
+        setStatusError(message);
+        setSaving(false);
+        return;
+      }
+
+      setStatus("Parsed resume saved.");
+      onSubmitParsed?.(parsed);
+    } catch (error) {
+      console.error("Save parsed resume error:", error);
+      setStatusError("An unexpected error occurred while saving resume.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const hasParsed = !!parsed;
@@ -761,7 +812,9 @@ export function ResumeIntake({
             }`}
           >
             <div className={styles.uploadHeader}>
-              <h2>Upload Resume</h2>
+              <h2>
+                {selectedFile ? "Confirm resume upload" : "Upload resume"}
+              </h2>
             </div>
 
             <form onSubmit={handleUpload} className={styles.uploadBody}>
@@ -817,10 +870,29 @@ export function ResumeIntake({
                   <div className={styles.filePreviewCard}>
                     <div className={styles.filePreviewHeader}>
                       <div className={styles.filePreviewHeaderMain}>
-                        <p className={styles.fileName}>{fileName}</p>
+                        <div className={styles.fileHeaderRow}>
+                          <div className={styles.fileHeaderIcon} aria-hidden="true">
+                            <FileText size={16} />
+                          </div>
+                          <p className={styles.fileName}>{fileName}</p>
+                        </div>
                         <p className={styles.fileMeta}>
-                          Ready to parse. We&apos;ll turn this into a structured
-                          profile.
+                          {selectedFile ? (
+                            <>
+                              {`${(selectedFile.size / (1024 * 1024)).toFixed(
+                                1
+                              )} MB`}
+                              {" "}
+                              {selectedFile.type || "Document"}
+                              <br />
+                              <span>
+                                We&apos;ll parse this into a structured profile
+                                when you continue.
+                              </span>
+                            </>
+                          ) : (
+                            "Ready to parse. We&apos;ll turn this into a structured profile."
+                          )}
                         </p>
                       </div>
                       <div className={styles.filePreviewActions}>
@@ -845,25 +917,6 @@ export function ResumeIntake({
                           {uploading ? "Parsing..." : "Upload & parse"}
                         </Button>
                       </div>
-                    </div>
-                    <div className={styles.filePreviewBody}>
-                      {previewUrl && selectedFile.type === "application/pdf" ? (
-                        <iframe
-                          src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                          className={styles.fileFrame}
-                          title="Resume preview"
-                        />
-                      ) : (
-                        <div className={styles.filePreviewFallback}>
-                          <div className={styles.fileIcon}>
-                            <span>CV</span>
-                          </div>
-                          <p className={styles.fileMeta}>
-                            Preview unavailable for this file type, but
-                            it&apos;s ready for parsing.
-                          </p>
-                        </div>
-                      )}
                     </div>
                     <input
                       id="resume-upload-input"
@@ -890,98 +943,109 @@ export function ResumeIntake({
         )}
 
         {hasParsed && parsed && (
-          <form onSubmit={handleSubmitParsed} className={styles.parsedShell}>
+          <form
+            onSubmit={handleSubmitParsed}
+            className={styles.parsedShell}
+          >
             <div className={styles.parsedHeader}>
-              <div>
-                <h2>Review parsed profile</h2>
-                <p>
-                  Edit any field below before we use this profile for
-                  interviews.
-                </p>
-              </div>
+              <h2>Structured profile</h2>
             </div>
 
             <div className={styles.parsedTabsRow}>
-              <Tabs
-                value={step}
-                onValueChange={(value) => goToStep(value as ResumeWizardStep)}
-              >
-                <TabsList>
-                  <TabsTrigger value="profile">
-                    <span className={styles.tabLabel}>
-                      Profile
-                      {profileComplete && (
-                        <span className={styles.tabDot} aria-hidden="true" />
-                      )}
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="career">
-                    <span className={styles.tabLabel}>
-                      Career
-                      {careerComplete && (
-                        <span className={styles.tabDot} aria-hidden="true" />
-                      )}
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="strengths">
-                    <span className={styles.tabLabel}>
-                      Strengths
-                      {strengthsComplete && (
-                        <span className={styles.tabDot} aria-hidden="true" />
-                      )}
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="extras">
-                    <span className={styles.tabLabel}>
-                      Extras
-                      {extrasComplete && (
-                        <span className={styles.tabDot} aria-hidden="true" />
-                      )}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+                  <Tabs
+                    value={step}
+                    onValueChange={(value) =>
+                      goToStep(value as ResumeWizardStep)
+                    }
+                  >
+                    <TabsList>
+                      <TabsTrigger value="profile">
+                        <span className={styles.tabLabel}>
+                          Profile
+                          {profileComplete && (
+                            <span
+                              className={styles.tabDot}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                      </TabsTrigger>
+                      <TabsTrigger value="career">
+                        <span className={styles.tabLabel}>
+                          Career
+                          {careerComplete && (
+                            <span
+                              className={styles.tabDot}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                      </TabsTrigger>
+                      <TabsTrigger value="strengths">
+                        <span className={styles.tabLabel}>
+                          Strengths
+                          {strengthsComplete && (
+                            <span
+                              className={styles.tabDot}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                      </TabsTrigger>
+                      <TabsTrigger value="extras">
+                        <span className={styles.tabLabel}>
+                          Extras
+                          {extrasComplete && (
+                            <span
+                              className={styles.tabDot}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
 
             {stepError && <p className={styles.stepError}>{stepError}</p>}
 
             <div className={styles.parsedGrid}>
-              {step === "profile" && (
-                <section className={styles.sectionCard}>
-                  <h3 className={styles.sectionTitle}>Basic information</h3>
-                  <div className={styles.fieldGrid}>
-                    <div>
-                      <p className={styles.fieldLabel}>
-                        First name
-                        <span className={styles.fieldRequired}>*</span>
-                      </p>
-                      <Input
-                        value={parsed.basic_info.first_name}
-                        onChange={(e) =>
-                          handleChangeBasic("first_name", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <p className={styles.fieldLabel}>
-                        Last name<span className={styles.fieldRequired}>*</span>
-                      </p>
-                      <Input
-                        value={parsed.basic_info.last_name}
-                        onChange={(e) =>
-                          handleChangeBasic("last_name", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className={styles.fieldFull}>
-                      <p className={styles.fieldLabel}>Headline / full name</p>
-                      <Input
-                        value={parsed.basic_info.full_name}
-                        onChange={(e) =>
-                          handleChangeBasic("full_name", e.target.value)
-                        }
-                      />
-                    </div>
+                  {step === "profile" && (
+                    <section className={styles.sectionCard}>
+                      <h3 className={styles.sectionTitle}>Basic information</h3>
+                      <div className={styles.fieldGrid}>
+                        <div>
+                          <p className={styles.fieldLabel}>
+                            First name
+                            <span className={styles.fieldRequired}>*</span>
+                          </p>
+                          <Input
+                            value={parsed.basic_info.first_name}
+                            onChange={(e) =>
+                              handleChangeBasic("first_name", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <p className={styles.fieldLabel}>
+                            Last name<span className={styles.fieldRequired}>*</span>
+                          </p>
+                          <Input
+                            value={parsed.basic_info.last_name}
+                            onChange={(e) =>
+                              handleChangeBasic("last_name", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className={styles.fieldFull}>
+                          <p className={styles.fieldLabel}>Headline / full name</p>
+                          <Input
+                            value={parsed.basic_info.full_name}
+                            onChange={(e) =>
+                              handleChangeBasic("full_name", e.target.value)
+                            }
+                          />
+                        </div>
                     <div>
                       <p className={styles.fieldLabel}>
                         Email<span className={styles.fieldRequired}>*</span>
@@ -1972,10 +2036,10 @@ export function ResumeIntake({
               {isLastStep && (
                 <Button
                   type="submit"
-                  disabled={!parsed}
+                  disabled={!parsed || saving}
                   className={styles.compactButton}
                 >
-                  Save parsed profile
+                  {saving ? "Saving..." : "Save parsed profile"}
                 </Button>
               )}
             </div>

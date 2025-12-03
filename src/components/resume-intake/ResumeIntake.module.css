@@ -193,21 +193,20 @@
 }
 
 .filePreviewCard {
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  padding: 16px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 1px 3px rgba(12, 43, 78, 0.04);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-  animation: slideInUp 0.3s ease-out;
+  flex-direction: row;
+  gap: 8px;
+  box-shadow: none;
+  animation: slideInUp 0.25s ease-out;
 }
 
 .filePreviewCard:hover {
-  box-shadow: 0 4px 12px rgba(12, 43, 78, 0.08);
-  border-color: var(--primary);
+  box-shadow: none;
+  border-color: transparent;
 }
 
 @keyframes slideInUp {
@@ -236,6 +235,26 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+}
+
+.fileHeaderRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fileHeaderIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .filePreviewActions {
@@ -326,11 +345,11 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--primary);
-  background: rgba(12, 43, 78, 0.05);
-  border: 1px solid rgba(12, 43, 78, 0.1);
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-top: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 6px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -486,48 +505,21 @@
 }
 
 .parsedShell {
-  padding: 24px 20px 22px;
-  border-radius: 24px;
-  background: radial-gradient(
-      circle at top left,
-      rgba(129, 140, 248, 0.2),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(16, 185, 129, 0.2),
-      transparent 55%
-    ),
-    var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(24px);
+  padding-top: 12px;
+  padding-bottom: 8px;
   width: 100%;
   max-width: none;
-  animation: slideInFade 0.4s ease-out;
   contain: layout style paint;
 }
-
-@keyframes slideInFade {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .dark .parsedShell {
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+  box-shadow: none;
 }
 
 .parsedHeader {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .parsedHeader h2 {
@@ -547,7 +539,7 @@
 }
 
 .parsedTabsRow {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .tabLabel {
@@ -763,10 +755,6 @@
 
   .uploadHeader h2 {
     font-size: 1rem;
-  }
-
-  .filePreviewCard {
-    padding: 10px;
   }
 
   .filePreviewHeader {

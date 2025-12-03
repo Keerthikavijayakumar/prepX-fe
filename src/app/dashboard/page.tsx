@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { FileTextIcon } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -11,18 +10,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import styles from "./page.module.css";
-
-const ResumeIntake = dynamic(
-  () => import("@/components/resume-intake").then((m) => m.ResumeIntake),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="rounded-xl border border-dashed border-border bg-muted/40 px-4 py-4 text-xs text-muted-foreground">
-        Loading resume workspace…
-      </div>
-    ),
-  }
-);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -82,8 +69,9 @@ export default function DashboardPage() {
   };
 
   const handleResumeUploaded = () => {
-    setShowUploader(false);
-    setLoading(true);
+    // Keep the workspace open so the parsed form inside ResumeIntake remains visible
+    // and refresh the top-level resume metadata in the background.
+    setShowUploader(true);
     void checkResumeStatus();
   };
 
@@ -199,7 +187,7 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-                              onClick={() => setShowUploader(true)}
+                              onClick={() => router.push("/resume")}
                             >
                               Replace resume
                             </button>
@@ -210,21 +198,24 @@ export default function DashboardPage() {
                   ) : (
                     <Card className="border-dashed bg-muted/40">
                       <CardContent className="py-5">
-                        <div className="flex flex-col gap-2">
-                          <h2 className="text-sm font-medium text-foreground">
-                            Upload your resume to get started
-                          </h2>
-                          <p className="text-xs text-muted-foreground sm:text-sm">
-                            We support PDF and common document formats up to
-                            5MB. Once your resume is uploaded and parsed, you
-                            can launch an AI practice interview that mirrors
-                            real hiring panels.
-                          </p>
-                        </div>
-                        <div className="mt-4">
-                          <ResumeIntake
-                            onResumeUploaded={handleResumeUploaded}
-                          />
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                          <div className="flex flex-col gap-2">
+                            <h2 className="text-sm font-medium text-foreground">
+                              No resume uploaded yet
+                            </h2>
+                            <p className="text-xs text-muted-foreground sm:text-sm">
+                              Open your dedicated resume workspace to upload and
+                              edit your profile. We&apos;ll use that data to
+                              personalise your AI interviews.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => router.push("/resume")}
+                          >
+                            Open resume workspace
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
