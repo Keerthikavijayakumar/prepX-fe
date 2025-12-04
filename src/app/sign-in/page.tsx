@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, Suspense } from "react";
 import type { ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { OtpPanel } from "@/components/OtpPanel";
@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function SignInPage() {
+function SignInPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -48,6 +48,14 @@ export default function SignInPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         router.replace("/dashboard");
+      }
+
+      function SignInPageInner() {
+        return (
+          <Suspense fallback={null}>
+            <SignInPageInner />
+          </Suspense>
+        );
       }
     });
   }, [router]);
@@ -295,5 +303,13 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInPageInner />
+    </Suspense>
   );
 }
