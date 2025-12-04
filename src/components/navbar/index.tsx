@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
+import { Badge } from "@/components/ui/badge";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -20,41 +21,37 @@ export function Navbar() {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-tight text-foreground">
-              DevMock<span className="text-primary">.ai</span>
+              Talentflow
             </span>
             <span className="text-xs text-muted-foreground">
-              Enterprise AI Mock Interviews
+              AI tech interview practice
             </span>
           </div>
         </Link>
 
-        {/* Primary nav (mirrors MainNavbar links) */}
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
-          <Link
-            href="#features"
-            className="transition-colors hover:text-foreground"
+        {/* Primary nav + beta badge */}
+        <div className="hidden items-center gap-4 md:flex">
+          <nav className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <Link
+              href="#features"
+              className="transition-colors hover:text-foreground"
+            >
+              Features
+            </Link>
+            <Link
+              href="#pricing"
+              className="transition-colors hover:text-foreground"
+            >
+              Pricing (Free)
+            </Link>
+          </nav>
+          <Badge
+            variant="outline"
+            className="border-emerald-500/40 bg-emerald-500/5 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-500"
           >
-            Features
-          </Link>
-          <Link
-            href="#system-design"
-            className="transition-colors hover:text-foreground"
-          >
-            System Design
-          </Link>
-          <Link
-            href="#pricing"
-            className="transition-colors hover:text-foreground"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="#enterprise"
-            className="transition-colors hover:text-foreground"
-          >
-            Enterprise
-          </Link>
-        </nav>
+            Free during beta
+          </Badge>
+        </div>
 
         {/* User controls (auth + theme + profile) */}
         <NavbarUserControls />
