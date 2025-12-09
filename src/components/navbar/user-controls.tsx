@@ -118,7 +118,7 @@ export function NavbarUserControls() {
     return (
       <div className="flex items-center gap-3">
         <Button size="sm" onClick={handleStartInterview} disabled={ctaLoading}>
-          Start Mock Interview
+          Start practicing
         </Button>
         {themeButton}
       </div>

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { FileTextIcon } from "lucide-react";
+import { FileTextIcon, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { interviewApi, getErrorMessage } from "@/lib/interviewClient";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,17 @@ export default function DashboardPage() {
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [resumeUploadedAt, setResumeUploadedAt] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(false);
+
+  // Interview eligibility state
+  const [eligibilityLoading, setEligibilityLoading] = useState(false);
+  const [canStartInterview, setCanStartInterview] = useState(false);
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+  const [existingSessionId, setExistingSessionId] = useState<string | null>(
+    null
+  );
+
+  // Start interview state
+  const [startingInterview, setStartingInterview] = useState(false);
 
   async function checkResumeStatus() {
     try {
@@ -63,11 +75,116 @@ export default function DashboardPage() {
     checkResumeStatus();
   }, []);
 
-  const handleStartInterview = () => {
-    // Simple room id for now; can switch to UUID later
-    const roomId = `interview_${Date.now()}`;
-    router.push(`/interview/${roomId}`);
-  };
+  /**
+   * Check interview eligibility when resume is available
+   */
+  async function checkInterviewEligibility() {
+    if (!hasResume) {
+      setCanStartInterview(false);
+      setEligibilityError("NO_RESUME");
+      return;
+    }
+
+    setEligibilityLoading(true);
+    setEligibilityError(null);
+
+    try {
+      const result = await interviewApi.checkEligibility();
+
+      if (result.success) {
+        setCanStartInterview(true);
+        setEligibilityError(null);
+        setExistingSessionId(null);
+      } else {
+        setCanStartInterview(false);
+        setEligibilityError(result.error || "UNKNOWN_ERROR");
+
+        // Store existing session ID if user has active session
+        if (
+          result.error === "ACTIVE_SESSION_EXISTS" &&
+          result.existingSessionId
+        ) {
+          setExistingSessionId(result.existingSessionId);
+        } else {
+          setExistingSessionId(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to check eligibility:", error);
+      setCanStartInterview(false);
+      setEligibilityError("NETWORK_ERROR");
+      setExistingSessionId(null);
+    } finally {
+      setEligibilityLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && hasResume) {
+      checkInterviewEligibility();
+    }
+  }, [loading, hasResume]);
+
+  /**
+   * Start interview session
+   *
+   * Flow:
+   * 1. Call /start API (creates session + LiveKit token atomically)
+   * 2. Store token in sessionStorage (secure, not in URL)
+   * 3. Navigate to /interview/[sessionId]
+   */
+  async function handleStartInterview() {
+    setStartingInterview(true);
+
+    try {
+      const result = await interviewApi.startSession();
+
+      if (!result.success) {
+        // Show error to user with graceful fallback
+        const errorMsg =
+          result.message || getErrorMessage(result.error || "UNKNOWN_ERROR");
+        alert(errorMsg);
+        setStartingInterview(false);
+        return;
+      }
+
+      // Success! Navigate to interview room with session and token
+      const { session, livekit } = result;
+
+      if (!session || !livekit) {
+        alert("Invalid response from server. Please try again.");
+        setStartingInterview(false);
+        return;
+      }
+
+      // Store LiveKit credentials in sessionStorage (not in URL for security)
+      try {
+        sessionStorage.setItem(
+          `interview_${session.id}`,
+          JSON.stringify({
+            token: livekit.token,
+            wsUrl: livekit.wsUrl,
+            roomName: livekit.roomName,
+            timestamp: Date.now(),
+          })
+        );
+      } catch (storageError) {
+        console.error("Failed to store session data:", storageError);
+        // Continue anyway - will fetch fresh token on page load
+      }
+
+      // Navigate without token in URL
+      router.push(`/interview/${session.id}`);
+    } catch (error) {
+      console.error("Failed to start interview:", error);
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to start interview. Please try again.";
+      alert(errorMsg);
+      setStartingInterview(false);
+    }
+  }
 
   const handleResumeUploaded = () => {
     // Keep the workspace open so the parsed form inside ResumeIntake remains visible
@@ -320,13 +437,64 @@ export default function DashboardPage() {
                                 </div>
                               </div>
 
-                              <div className="mt-1 flex justify-start md:justify-end">
-                                <Button
-                                  type="button"
-                                  onClick={handleStartInterview}
-                                >
-                                  Start AI practice interview
-                                </Button>
+                              <div className="mt-1 flex flex-col gap-2">
+                                <div className="flex justify-start md:justify-end">
+                                  <Button
+                                    type="button"
+                                    onClick={handleStartInterview}
+                                    disabled={
+                                      !canStartInterview ||
+                                      eligibilityLoading ||
+                                      startingInterview
+                                    }
+                                  >
+                                    {startingInterview ? (
+                                      <>
+                                        <Spinner className="mr-2 h-4 w-4" />
+                                        Starting interview...
+                                      </>
+                                    ) : eligibilityLoading ? (
+                                      <>
+                                        <Spinner className="mr-2 h-4 w-4" />
+                                        Checking eligibility...
+                                      </>
+                                    ) : (
+                                      "Start AI practice interview"
+                                    )}
+                                  </Button>
+                                </div>
+
+                                {/* Show eligibility error if any */}
+                                {eligibilityError && !eligibilityLoading && (
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                      <span>
+                                        {getErrorMessage(eligibilityError)}
+                                      </span>
+                                    </div>
+
+                                    {/* Show rejoin button if active session exists */}
+                                    {eligibilityError ===
+                                      "ACTIVE_SESSION_EXISTS" &&
+                                      existingSessionId && (
+                                        <div className="flex justify-start md:justify-end">
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              router.push(
+                                                `/interview/${existingSessionId}`
+                                              )
+                                            }
+                                          >
+                                            Rejoin Active Interview
+                                          </Button>
+                                        </div>
+                                      )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </CardContent>

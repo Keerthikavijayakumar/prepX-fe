@@ -22,7 +22,14 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       const { data, error } = await supabase.auth.getUser();
+      console.log("supabase.auth.getUser()", data);
 
+      // Also log the current auth access token for debugging
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log(
+        "supabase.auth.getSession() access_token",
+        sessionData.session?.access_token
+      );
       if (error || !data.user) {
         router.replace("/sign-in");
         return;

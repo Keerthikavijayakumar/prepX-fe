@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -16,7 +16,9 @@ import "@livekit/components-styles";
 import { Room, Track } from "livekit-client";
 
 import { InterviewLayout } from "@/components/interview/InterviewLayout";
-import { supabase } from "@/lib/supabaseClient";
+import { interviewApi } from "@/lib/interviewClient";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 
 interface InterviewPageProps {
   params: Promise<{
@@ -26,11 +28,13 @@ interface InterviewPageProps {
 
 export default function InterviewPage({ params }: InterviewPageProps) {
   const router = useRouter();
-  const { room } = use(params);
+  const searchParams = useSearchParams();
+  const { room: sessionId } = use(params);
 
   // LiveKit connection state
   const [token, setToken] = useState<string | null>(null);
   const [wsUrl, setWsUrl] = useState<string | null>(null);
+  const [roomName, setRoomName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,59 +47,91 @@ export default function InterviewPage({ params }: InterviewPageProps) {
     };
   }, []);
 
-  // Fetch LiveKit token and server URL from backend
+  /**
+   * Setup LiveKit connection
+   *
+   * Flow:
+   * 1. Check sessionStorage for token (first load from dashboard)
+   * 2. If not found, fetch fresh token from API (page refresh scenario)
+   * 3. Validate session is still active
+   */
   useEffect(() => {
     async function setupLiveKit() {
       try {
-        const { data } = await supabase.auth.getSession();
-        const accessToken = data.session?.access_token;
+        // Try to get token from sessionStorage (first load)
+        const storedData = sessionStorage.getItem(`interview_${sessionId}`);
 
-        if (!accessToken) {
-          router.push("/sign-in");
-          return;
+        if (storedData) {
+          try {
+            const {
+              token: storedToken,
+              wsUrl: storedWsUrl,
+              roomName: storedRoomName,
+            } = JSON.parse(storedData);
+
+            if (storedToken && storedWsUrl && storedRoomName) {
+              // Use stored credentials
+              setToken(storedToken);
+              setWsUrl(storedWsUrl);
+              setRoomName(storedRoomName);
+              setLoading(false);
+              return;
+            }
+          } catch (parseError) {
+            console.error("Failed to parse stored session data:", parseError);
+            // Continue to fetch fresh token
+          }
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-        if (!backendUrl) {
-          setError("Backend URL is not configured");
+        // No stored token or parse failed: fetch fresh token
+        // First, verify session is still active
+        const session = await interviewApi.getSession(sessionId);
+
+        if (!session) {
+          setError("Session not found. Please start a new interview.");
           setLoading(false);
           return;
         }
 
-        const res = await fetch(`${backendUrl}/api/livekit/token`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ roomName: room }),
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.message || "Failed to fetch LiveKit token");
+        if (session.status !== "active") {
+          setError(
+            `Session is ${session.status}. Please start a new interview.`
+          );
+          setLoading(false);
+          return;
         }
 
-        const json = await res.json();
-        setToken(json.token);
-        setWsUrl(json.wsUrl);
+        // Get fresh LiveKit token
+        const livekitData = await interviewApi.getLiveKitToken(
+          session.livekit_room_name,
+          sessionId
+        );
+
+        setToken(livekitData.token);
+        setWsUrl(livekitData.wsUrl);
+        setRoomName(livekitData.roomName);
         setLoading(false);
       } catch (err: any) {
         console.error("Error setting up LiveKit:", err);
-        setError(err.message || "Unknown error");
+        const errorMessage =
+          err.message || "Failed to connect to interview. Please try again.";
+        setError(errorMessage);
         setLoading(false);
       }
     }
 
     setupLiveKit();
-  }, [room, router]);
+  }, [sessionId, searchParams, router]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          Connecting to your AI interview...
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <Spinner className="h-8 w-8" />
+          <p className="text-sm text-muted-foreground">
+            Connecting to your AI interview...
+          </p>
+        </div>
       </div>
     );
   }
@@ -103,15 +139,31 @@ export default function InterviewPage({ params }: InterviewPageProps) {
   if (error || !token || !wsUrl) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-        <p className="text-sm text-destructive">
-          Failed to start interview: {error || "Missing LiveKit config"}
-        </p>
-        <button
-          type="button"
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
-          onClick={() => router.push("/dashboard")}>
-          Back to dashboard
-        </button>
+        <div className="flex flex-col items-center gap-3 max-w-md">
+          <div className="rounded-full bg-destructive/10 p-3">
+            <svg
+              className="h-6 w-6 text-destructive"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold">Connection Failed</h2>
+          <p className="text-sm text-muted-foreground">
+            {error ||
+              "Unable to connect to the interview room. Please try again."}
+          </p>
+          <Button onClick={() => router.push("/dashboard")} className="mt-2">
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
     );
   }
@@ -121,7 +173,8 @@ export default function InterviewPage({ params }: InterviewPageProps) {
       <RoomAudioRenderer />
       <StartAudio label="Enable audio" />
       <InterviewExperience
-        roomName={room}
+        sessionId={sessionId}
+        roomName={roomName || sessionId}
         onEndCall={() => router.push("/dashboard")}
       />
     </LiveKitRoom>
@@ -129,12 +182,40 @@ export default function InterviewPage({ params }: InterviewPageProps) {
 }
 
 function InterviewExperience({
+  sessionId,
   roomName,
   onEndCall,
 }: {
+  sessionId: string;
   roomName: string;
   onEndCall: () => void;
 }) {
+  const [endingSession, setEndingSession] = useState(false);
+
+  /**
+   * Handle end call
+   *
+   * Flow:
+   * 1. Call /end API to mark session as ended
+   * 2. Disconnect from LiveKit room
+   * 3. Navigate back to dashboard
+   */
+  const handleEndCall = async () => {
+    if (endingSession) return;
+
+    setEndingSession(true);
+
+    try {
+      // End session via API
+      await interviewApi.endSession(sessionId);
+    } catch (error) {
+      console.error("Failed to end session:", error);
+      // Continue anyway - user wants to leave
+    } finally {
+      // Navigate back to dashboard
+      onEndCall();
+    }
+  };
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
@@ -150,8 +231,12 @@ function InterviewExperience({
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [speakerDevices, setSpeakerDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string | undefined>();
-  const [selectedCameraId, setSelectedCameraId] = useState<string | undefined>();
-  const [selectedSpeakerId, setSelectedSpeakerId] = useState<string | undefined>();
+  const [selectedCameraId, setSelectedCameraId] = useState<
+    string | undefined
+  >();
+  const [selectedSpeakerId, setSelectedSpeakerId] = useState<
+    string | undefined
+  >();
 
   // Load available media devices from LiveKit
   useEffect(() => {
@@ -170,7 +255,8 @@ function InterviewExperience({
 
         if (!selectedMicId && mics[0]) setSelectedMicId(mics[0].deviceId);
         if (!selectedCameraId && cams[0]) setSelectedCameraId(cams[0].deviceId);
-        if (!selectedSpeakerId && speakers[0]) setSelectedSpeakerId(speakers[0].deviceId);
+        if (!selectedSpeakerId && speakers[0])
+          setSelectedSpeakerId(speakers[0].deviceId);
       } catch (err) {
         console.error("Failed to load media devices", err);
       }
@@ -190,7 +276,7 @@ function InterviewExperience({
 
     const handler = async (
       reader: any,
-      info: { identity?: string } | undefined,
+      info: { identity?: string } | undefined
     ) => {
       try {
         const message = await reader.readAll();
@@ -210,23 +296,31 @@ function InterviewExperience({
 
         // Prefer matching by track ID to reliably detect the local candidate,
         // regardless of how identities are mapped.
-        const localAudioPubs = ((localParticipant as any)?.audioTracks ?? []) as any[];
-        const isLocalByTrack = !!trackSid && localAudioPubs.some((pub) => pub.trackSid === trackSid);
+        const localAudioPubs = ((localParticipant as any)?.audioTracks ??
+          []) as any[];
+        const isLocalByTrack =
+          !!trackSid && localAudioPubs.some((pub) => pub.trackSid === trackSid);
 
         if (isLocalByTrack) {
           label = "You";
         } else if (senderIdentity) {
-          const participant = participants.find((p) => p.identity === senderIdentity);
+          const participant = participants.find(
+            (p) => p.identity === senderIdentity
+          );
           if (participant) {
-            const baseName = participant.name || participant.identity || "Guest";
+            const baseName =
+              participant.name || participant.identity || "Guest";
             label = participant.isLocal ? "You" : baseName;
           }
         }
 
         const segmentId = (attrs["lk.segment_id"] as string | undefined) ?? "";
-        const id = segmentId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const id =
+          segmentId ||
+          `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-        const text = typeof message === "string" ? message : String(message ?? "");
+        const text =
+          typeof message === "string" ? message : String(message ?? "");
         const trimmedText = text.trim();
 
         setSubtitles((prev) => {
@@ -270,7 +364,10 @@ function InterviewExperience({
     room.registerTextStreamHandler?.("lk.transcription", handler);
 
     return () => {
-      if (room && typeof (room as any).unregisterTextStreamHandler === "function") {
+      if (
+        room &&
+        typeof (room as any).unregisterTextStreamHandler === "function"
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (room as any).unregisterTextStreamHandler("lk.transcription", handler);
       }
@@ -382,10 +479,19 @@ function InterviewExperience({
       onToggleCc={() => setCcOn((prev) => !prev)}
       onOpenSettings={() => setSettingsOpen(true)}
       onCloseSettings={() => setSettingsOpen(false)}
-      onEndCall={onEndCall}
-      micDevices={micDevices.map((d) => ({ id: d.deviceId, label: d.label || "Microphone" }))}
-      cameraDevices={cameraDevices.map((d) => ({ id: d.deviceId, label: d.label || "Camera" }))}
-      speakerDevices={speakerDevices.map((d) => ({ id: d.deviceId, label: d.label || "Speakers" }))}
+      onEndCall={handleEndCall}
+      micDevices={micDevices.map((d) => ({
+        id: d.deviceId,
+        label: d.label || "Microphone",
+      }))}
+      cameraDevices={cameraDevices.map((d) => ({
+        id: d.deviceId,
+        label: d.label || "Camera",
+      }))}
+      speakerDevices={speakerDevices.map((d) => ({
+        id: d.deviceId,
+        label: d.label || "Speakers",
+      }))}
       selectedMicId={selectedMicId}
       selectedCameraId={selectedCameraId}
       selectedSpeakerId={selectedSpeakerId}

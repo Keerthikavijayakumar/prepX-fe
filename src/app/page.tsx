@@ -250,7 +250,7 @@ export default function Home() {
         </div>
 
         <motion.div
-          className="mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 pb-16 pt-12 text-center lg:pb-20 lg:pt-16"
+          className="mx-auto flex max-w-3xl flex-col items-center gap-12 px-6 pb-20 pt-16 text-center lg:pb-24 lg:pt-20"
           style={{ y: y1, opacity, scale }}
         >
           <motion.div
@@ -338,34 +338,6 @@ export default function Home() {
                         d="M13 7l5 5m0 0l-5 5m5-5H6"
                       />
                     </motion.svg>
-                  </span>
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="group w-full text-xs transition-all hover:border-primary/50 hover:bg-primary/5 sm:w-auto sm:text-sm"
-                  onClick={handleStartClick}
-                >
-                  <span className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                    Explore the dashboard
                   </span>
                 </Button>
               </motion.div>
@@ -1019,9 +991,6 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
               >
                 <Card className="group relative overflow-hidden border-border/50 bg-card shadow-2xl">
-                  {/* Animated gradient border */}
-                  <div className="absolute -inset-[1px] -z-10 rounded-lg bg-gradient-to-r from-emerald-500 via-primary to-sky-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
                   <CardHeader className="space-y-4 pb-8">
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
