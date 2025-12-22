@@ -1,0 +1,1 @@
+export { ResumeProfileComplete as ResumeProfile } from "./ResumeProfileComplete";

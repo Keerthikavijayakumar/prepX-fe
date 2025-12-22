@@ -44,6 +44,14 @@ export interface EligibilityResponse {
   existingSessionId?: string; // Session ID if ACTIVE_SESSION_EXISTS
 }
 
+export interface InterviewConfig {
+  interview_type: "technical" | "behavioral" | "mixed";
+  duration_minutes: 15 | 30;
+  target_role: string;
+  target_company?: string;
+  job_description?: string;
+}
+
 export interface StartSessionResponse {
   success: boolean;
   error?: string;
@@ -164,12 +172,13 @@ export const interviewApi = {
    *
    * Rate limited: 3 requests per 60 seconds
    */
-  async startSession(): Promise<StartSessionResponse> {
+  async startSession(config: InterviewConfig): Promise<StartSessionResponse> {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_URL}/api/interviews/start`, {
         method: "POST",
         headers,
+        body: JSON.stringify(config),
         signal: AbortSignal.timeout(15000), // 15 second timeout for session creation
       });
 

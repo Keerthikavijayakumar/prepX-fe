@@ -184,7 +184,7 @@ function SignInPageInner() {
             Private beta · Passwordless access
           </Badge>
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-            Sign in to continue your DevMock.ai interview journey.
+            Sign in to continue your Panelroom.io interview journey.
           </h1>
           <p className="text-sm text-muted-foreground sm:text-base">
             One secure magic link to your inbox. No passwords, no friction.

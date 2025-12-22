@@ -27,7 +27,7 @@ const sourceCodePro = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "DevMock.ai | Next Gen Technical Interviews",
+  title: "Panelroom.io | Next Gen Technical Interviews",
   description:
     "AI-powered mock interviews for developers with real-time feedback and deep technical evaluation.",
 };

@@ -11,6 +11,23 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import styles from "./page.module.css";
 
 export default function DashboardPage() {
@@ -33,11 +50,27 @@ export default function DashboardPage() {
   // Start interview state
   const [startingInterview, setStartingInterview] = useState(false);
 
+  // Interview configuration modal
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [interviewConfig, setInterviewConfig] = useState({
+    interview_type: "technical" as "technical" | "behavioral" | "mixed",
+    duration_minutes: 30 as 15 | 30,
+    target_role: "",
+    target_company: "",
+    job_description: "",
+  });
+
   async function checkResumeStatus() {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      // Redirect to sign-in if not authenticated
+      if (!user) {
+        router.push("/sign-in");
+        return;
+      }
 
       if (user) {
         const { data: profileData } = await supabase
@@ -66,6 +99,8 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error("Error checking resume status:", err);
+      // On error, redirect to sign-in as a safety measure
+      router.push("/sign-in");
     } finally {
       setLoading(false);
     }
@@ -126,18 +161,34 @@ export default function DashboardPage() {
   }, [loading, hasResume]);
 
   /**
-   * Start interview session
+   * Open configuration modal
+   */
+  function handleStartInterview() {
+    if (!canStartInterview) {
+      return;
+    }
+    setShowConfigModal(true);
+  }
+
+  /**
+   * Start interview session with configuration
    *
    * Flow:
    * 1. Call /start API (creates session + LiveKit token atomically)
    * 2. Store token in sessionStorage (secure, not in URL)
    * 3. Navigate to /interview/[sessionId]
    */
-  async function handleStartInterview() {
+  async function handleSubmitConfig() {
+    // Validate required fields
+    if (!interviewConfig.target_role.trim()) {
+      alert("Please enter the target role");
+      return;
+    }
+
     setStartingInterview(true);
 
     try {
-      const result = await interviewApi.startSession();
+      const result = await interviewApi.startSession(interviewConfig);
 
       if (!result.success) {
         // Show error to user with graceful fallback
@@ -174,6 +225,7 @@ export default function DashboardPage() {
       }
 
       // Navigate without token in URL
+      setShowConfigModal(false);
       router.push(`/interview/${session.id}`);
     } catch (error) {
       console.error("Failed to start interview:", error);
@@ -629,6 +681,186 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {/* Interview Configuration Modal */}
+      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Configure Your Interview</DialogTitle>
+            {/* <DialogDescription>
+              Customize your AI interview session to match your target role and
+              preparation needs.
+            </DialogDescription> */}
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Interview Type */}
+            <div className="space-y-2">
+              <Label htmlFor="interview-type" className="text-sm font-medium">
+                Interview Type <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={interviewConfig.interview_type}
+                onValueChange={(value) =>
+                  setInterviewConfig({
+                    ...interviewConfig,
+                    interview_type: value as any,
+                  })
+                }
+              >
+                <SelectTrigger id="interview-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="technical">
+                    Technical Interview
+                  </SelectItem>
+                  <SelectItem value="behavioral">
+                    Behavioral Interview
+                  </SelectItem>
+                  <SelectItem value="mixed">
+                    Mixed Interview (60/40 Technical/Behavioral)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {interviewConfig.interview_type === "technical" &&
+                  "Deep dive into technical skills, system design, and problem-solving"}
+                {interviewConfig.interview_type === "behavioral" &&
+                  "Focus on leadership, teamwork, and past experiences using STAR method"}
+                {interviewConfig.interview_type === "mixed" &&
+                  "Balanced assessment of technical skills and behavioral competencies"}
+              </p>
+            </div>
+
+            {/* Duration */}
+            <div className="space-y-2">
+              <Label htmlFor="duration" className="text-sm font-medium">
+                Duration <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={interviewConfig.duration_minutes.toString()}
+                onValueChange={(value) =>
+                  setInterviewConfig({
+                    ...interviewConfig,
+                    duration_minutes: parseInt(value) as any,
+                  })
+                }
+              >
+                <SelectTrigger id="duration">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15 minutes</SelectItem>
+                  <SelectItem value="30">30 minutes (Recommended)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose 15 minutes for a quick practice session or 30 minutes for
+                a comprehensive interview.
+              </p>
+            </div>
+
+            {/* Target Role */}
+            <div className="space-y-2">
+              <Label htmlFor="target-role" className="text-sm font-medium">
+                Target Role <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="target-role"
+                placeholder="e.g., Senior Frontend Engineer, Full Stack Developer"
+                value={interviewConfig.target_role}
+                onChange={(e) =>
+                  setInterviewConfig({
+                    ...interviewConfig,
+                    target_role: e.target.value,
+                  })
+                }
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                The role you&apos;re preparing for. Questions will be tailored to
+                this position.
+              </p>
+            </div>
+
+            {/* Target Company (Optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="target-company" className="text-sm font-medium">
+                Target Company{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="target-company"
+                placeholder="e.g., Google, Meta, Startup XYZ"
+                value={interviewConfig.target_company}
+                onChange={(e) =>
+                  setInterviewConfig({
+                    ...interviewConfig,
+                    target_company: e.target.value,
+                  })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                If provided, questions may be tailored to the company&apos;s tech
+                stack and culture.
+              </p>
+            </div>
+
+            {/* Job Description (Optional) */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="job-description"
+                className="text-sm font-medium"
+              >
+                Job Description{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Textarea
+                id="job-description"
+                placeholder="Paste the job description here to get questions aligned with specific requirements..."
+                value={interviewConfig.job_description}
+                onChange={(e) =>
+                  setInterviewConfig({
+                    ...interviewConfig,
+                    job_description: e.target.value,
+                  })
+                }
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste the full job description to get highly targeted questions
+                based on required skills.
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfigModal(false)}
+              disabled={startingInterview}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitConfig}
+              disabled={startingInterview || !interviewConfig.target_role.trim()}
+            >
+              {startingInterview ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Starting...
+                </>
+              ) : (
+                "Start Interview"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

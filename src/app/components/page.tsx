@@ -31,7 +31,7 @@ export default function ComponentsPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Component Library</h1>
           <p className="text-sm text-muted-foreground">
-            shadcn/ui Button variants used in DevMock.ai. Use this page as a
+            shadcn/ui Button variants used in Panelroom.io. Use this page as a
             reference when choosing button types and sizes.
           </p>
         </div>
