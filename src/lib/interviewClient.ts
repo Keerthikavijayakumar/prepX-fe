@@ -45,7 +45,7 @@ export interface EligibilityResponse {
 }
 
 export interface InterviewConfig {
-  interview_type: "technical" | "behavioral" | "mixed";
+  complexity: "beginner" | "intermediate" | "advanced";
   duration_minutes: 15 | 30;
   target_role: string;
   target_company?: string;
@@ -60,8 +60,7 @@ export interface StartSessionResponse {
     id: string;
     room_name: string;
     status: string;
-    start_time: string;
-    server_end_time: string;
+    started_at: string;
   };
   livekit?: {
     token: string;
@@ -73,14 +72,19 @@ export interface StartSessionResponse {
 export interface SessionResponse {
   id: string;
   user_id: string;
-  status: "active" | "completed" | "ended_early" | "timeout";
-  start_time: string;
-  server_end_time: string;
-  end_time?: string;
-  end_reason?: string;
-  livekit_room_name: string;
+  status: "active" | "completed" | "failed" | "timeout";
+  started_at: string;
+  ended_at?: string;
+  room_name: string;
+  complexity: "beginner" | "intermediate" | "advanced";
+  target_role?: string;
+  target_company?: string;
+  job_description?: string;
+  duration_minutes: number;
   score_overall?: number;
-  summary?: string;
+  feedback_summary?: string;
+  feedback_details?: any;
+  transcript?: any;
 }
 
 export interface EndSessionResponse {

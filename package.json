@@ -4,8 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:qa": "env-cmd -f .env.qa next dev",
+    "dev:prod": "env-cmd -f .env.prod next dev",
     "build": "next build",
+    "build:qa": "env-cmd -f .env.qa next build",
+    "build:prod": "env-cmd -f .env.prod next build",
     "start": "next start",
+    "start:qa": "env-cmd -f .env.qa next start",
+    "start:prod": "env-cmd -f .env.prod next start",
     "lint": "eslint"
   },
   "dependencies": {
@@ -64,6 +70,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
