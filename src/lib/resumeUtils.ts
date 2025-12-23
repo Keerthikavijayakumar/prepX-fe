@@ -7,11 +7,11 @@ export const createEmptyResume = (): ParsedResume => ({
     full_name: "",
     email: "",
     phone: "",
-    linkedin: "",
-    github: "",
-    portfolio: "",
+    linkedin_url: "",
+    github_url: "",
+    portfolio_url: "",
     location: { city: "", state: "", country: "" },
-    summary: ""
+    summary: "",
   },
   work_experience: [],
   education: [],
@@ -19,18 +19,15 @@ export const createEmptyResume = (): ParsedResume => ({
   projects: [],
   certifications: [],
   languages: [],
-  publications: [],
-  awards: [],
   interests: [],
-  last_updated: new Date().toISOString()
 });
 
 export const isFieldEmpty = (value: any): boolean => {
   if (value === null || value === undefined) return true;
-  if (typeof value === 'string') return !value.trim();
+  if (typeof value === "string") return !value.trim();
   if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === 'object') {
-    return Object.values(value).every(v => isFieldEmpty(v));
+  if (typeof value === "object") {
+    return Object.values(value).every((v) => isFieldEmpty(v));
   }
   return false;
 };

@@ -25,7 +25,7 @@ export interface ProfileBasicInfo {
 // Work Experience - Mandatory fields
 export interface ProfileWorkExperience {
   id: string; // Unique identifier
-  job_title: string; // Required
+  title: string; // Required
   company: string; // Required
   location?: string;
   start_date: string; // Required (MM/YYYY format)
@@ -104,96 +104,110 @@ export interface ValidationError {
 }
 
 // Helper function to validate basic info
-export function validateBasicInfo(basicInfo: Partial<ProfileBasicInfo>): ValidationError[] {
+export function validateBasicInfo(
+  basicInfo: Partial<ProfileBasicInfo>
+): ValidationError[] {
   const errors: ValidationError[] = [];
-  
+
   if (!basicInfo.first_name?.trim()) {
-    errors.push({ field: 'first_name', message: 'First Name is required' });
+    errors.push({ field: "first_name", message: "First Name is required" });
   }
-  
+
   if (!basicInfo.last_name?.trim()) {
-    errors.push({ field: 'last_name', message: 'Last Name is required' });
+    errors.push({ field: "last_name", message: "Last Name is required" });
   }
-  
+
   if (!basicInfo.email?.trim()) {
-    errors.push({ field: 'email', message: 'Email is required' });
+    errors.push({ field: "email", message: "Email is required" });
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(basicInfo.email)) {
-    errors.push({ field: 'email', message: 'Email must be valid' });
+    errors.push({ field: "email", message: "Email must be valid" });
   }
-  
+
   if (!basicInfo.summary?.trim()) {
-    errors.push({ field: 'summary', message: 'Professional Summary is required' });
+    errors.push({
+      field: "summary",
+      message: "Professional Summary is required",
+    });
   }
-  
+
   return errors;
 }
 
 // Helper function to validate work experience
-export function validateWorkExperience(experience: Partial<ProfileWorkExperience>): ValidationError[] {
+export function validateWorkExperience(
+  experience: Partial<ProfileWorkExperience>
+): ValidationError[] {
   const errors: ValidationError[] = [];
-  
-  if (!experience.job_title?.trim()) {
-    errors.push({ field: 'job_title', message: 'Job Title is required' });
+
+  if (!experience.title?.trim()) {
+    errors.push({ field: "title", message: "Job Title is required" });
   }
-  
+
   if (!experience.company?.trim()) {
-    errors.push({ field: 'company', message: 'Company is required' });
+    errors.push({ field: "company", message: "Company is required" });
   }
-  
+
   if (!experience.start_date?.trim()) {
-    errors.push({ field: 'start_date', message: 'Start Date is required' });
+    errors.push({ field: "start_date", message: "Start Date is required" });
   }
-  
+
   if (!experience.end_date?.trim()) {
-    errors.push({ field: 'end_date', message: 'End Date is required' });
+    errors.push({ field: "end_date", message: "End Date is required" });
   }
-  
+
   return errors;
 }
 
 // Helper function to validate education
-export function validateEducation(education: Partial<ProfileEducation>): ValidationError[] {
+export function validateEducation(
+  education: Partial<ProfileEducation>
+): ValidationError[] {
   const errors: ValidationError[] = [];
-  
+
   if (!education.institution?.trim()) {
-    errors.push({ field: 'institution', message: 'Institution is required' });
+    errors.push({ field: "institution", message: "Institution is required" });
   }
-  
+
   if (!education.degree?.trim()) {
-    errors.push({ field: 'degree', message: 'Degree is required' });
+    errors.push({ field: "degree", message: "Degree is required" });
   }
-  
+
   if (!education.field_of_study?.trim()) {
-    errors.push({ field: 'field_of_study', message: 'Field of Study is required' });
+    errors.push({
+      field: "field_of_study",
+      message: "Field of Study is required",
+    });
   }
-  
+
   if (!education.start_date?.trim()) {
-    errors.push({ field: 'start_date', message: 'Start Date is required' });
+    errors.push({ field: "start_date", message: "Start Date is required" });
   }
-  
+
   if (!education.end_date?.trim()) {
-    errors.push({ field: 'end_date', message: 'End Date is required' });
+    errors.push({ field: "end_date", message: "End Date is required" });
   }
-  
+
   return errors;
 }
 
 // Helper function to validate project
-export function validateProject(project: Partial<ProfileProject>): ValidationError[] {
+export function validateProject(
+  project: Partial<ProfileProject>
+): ValidationError[] {
   const errors: ValidationError[] = [];
-  
+
   if (!project.title?.trim()) {
-    errors.push({ field: 'title', message: 'Project Title is required' });
+    errors.push({ field: "title", message: "Project Title is required" });
   }
-  
+
   if (!project.role?.trim()) {
-    errors.push({ field: 'role', message: 'Your Role is required' });
+    errors.push({ field: "role", message: "Your Role is required" });
   }
-  
+
   if (!project.description?.trim()) {
-    errors.push({ field: 'description', message: 'Description is required' });
+    errors.push({ field: "description", message: "Description is required" });
   }
-  
+
   return errors;
 }
 
@@ -201,15 +215,15 @@ export function validateProject(project: Partial<ProfileProject>): ValidationErr
 export function createEmptyProfile(): UserProfile {
   return {
     basic_info: {
-      first_name: '',
-      last_name: '',
-      email: '',
-      summary: '',
+      first_name: "",
+      last_name: "",
+      email: "",
+      summary: "",
       location: {
-        city: '',
-        state: '',
-        country: ''
-      }
+        city: "",
+        state: "",
+        country: "",
+      },
     },
     work_experience: [],
     education: [],
@@ -218,6 +232,6 @@ export function createEmptyProfile(): UserProfile {
     certifications: [],
     languages: [],
     interests: [],
-    last_updated: new Date().toISOString()
+    last_updated: new Date().toISOString(),
   };
 }

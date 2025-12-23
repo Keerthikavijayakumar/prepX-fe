@@ -103,7 +103,7 @@ export default function InterviewPage({ params }: InterviewPageProps) {
 
         // Get fresh LiveKit token
         const livekitData = await interviewApi.getLiveKitToken(
-          session.livekit_room_name,
+          session.room_name,
           sessionId
         );
 

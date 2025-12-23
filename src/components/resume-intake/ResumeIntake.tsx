@@ -32,7 +32,7 @@ type ResumeBasicInfo = {
 };
 
 type ResumeWorkExperience = {
-  job_title: string;
+  title: string;
   company: string;
   location: string;
   start_date: string;
@@ -147,7 +147,7 @@ export function ResumeIntake({
   function hasBlankWorkExperienceItems(data: ParsedResume) {
     return data.work_experience.some((item) => {
       return (
-        !item.job_title.trim() &&
+        !item.title.trim() &&
         !item.company.trim() &&
         !item.location.trim() &&
         !item.start_date.trim() &&
@@ -465,7 +465,7 @@ export function ResumeIntake({
   function handleAddWorkExperience() {
     if (!parsed) return;
     const blank: ResumeWorkExperience = {
-      job_title: "",
+      title: "",
       company: "",
       location: "",
       start_date: "",
@@ -871,7 +871,10 @@ export function ResumeIntake({
                     <div className={styles.filePreviewHeader}>
                       <div className={styles.filePreviewHeaderMain}>
                         <div className={styles.fileHeaderRow}>
-                          <div className={styles.fileHeaderIcon} aria-hidden="true">
+                          <div
+                            className={styles.fileHeaderIcon}
+                            aria-hidden="true"
+                          >
                             <FileText size={16} />
                           </div>
                           <p className={styles.fileName}>{fileName}</p>
@@ -881,8 +884,7 @@ export function ResumeIntake({
                             <>
                               {`${(selectedFile.size / (1024 * 1024)).toFixed(
                                 1
-                              )} MB`}
-                              {" "}
+                              )} MB`}{" "}
                               {selectedFile.type || "Document"}
                               <br />
                               <span>
@@ -943,109 +945,92 @@ export function ResumeIntake({
         )}
 
         {hasParsed && parsed && (
-          <form
-            onSubmit={handleSubmitParsed}
-            className={styles.parsedShell}
-          >
+          <form onSubmit={handleSubmitParsed} className={styles.parsedShell}>
             <div className={styles.parsedHeader}>
               <h2>Structured profile</h2>
             </div>
 
             <div className={styles.parsedTabsRow}>
-                  <Tabs
-                    value={step}
-                    onValueChange={(value) =>
-                      goToStep(value as ResumeWizardStep)
-                    }
-                  >
-                    <TabsList>
-                      <TabsTrigger value="profile">
-                        <span className={styles.tabLabel}>
-                          Profile
-                          {profileComplete && (
-                            <span
-                              className={styles.tabDot}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </span>
-                      </TabsTrigger>
-                      <TabsTrigger value="career">
-                        <span className={styles.tabLabel}>
-                          Career
-                          {careerComplete && (
-                            <span
-                              className={styles.tabDot}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </span>
-                      </TabsTrigger>
-                      <TabsTrigger value="strengths">
-                        <span className={styles.tabLabel}>
-                          Strengths
-                          {strengthsComplete && (
-                            <span
-                              className={styles.tabDot}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </span>
-                      </TabsTrigger>
-                      <TabsTrigger value="extras">
-                        <span className={styles.tabLabel}>
-                          Extras
-                          {extrasComplete && (
-                            <span
-                              className={styles.tabDot}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </span>
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
+              <Tabs
+                value={step}
+                onValueChange={(value) => goToStep(value as ResumeWizardStep)}
+              >
+                <TabsList>
+                  <TabsTrigger value="profile">
+                    <span className={styles.tabLabel}>
+                      Profile
+                      {profileComplete && (
+                        <span className={styles.tabDot} aria-hidden="true" />
+                      )}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="career">
+                    <span className={styles.tabLabel}>
+                      Career
+                      {careerComplete && (
+                        <span className={styles.tabDot} aria-hidden="true" />
+                      )}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="strengths">
+                    <span className={styles.tabLabel}>
+                      Strengths
+                      {strengthsComplete && (
+                        <span className={styles.tabDot} aria-hidden="true" />
+                      )}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="extras">
+                    <span className={styles.tabLabel}>
+                      Extras
+                      {extrasComplete && (
+                        <span className={styles.tabDot} aria-hidden="true" />
+                      )}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
 
             {stepError && <p className={styles.stepError}>{stepError}</p>}
 
             <div className={styles.parsedGrid}>
-                  {step === "profile" && (
-                    <section className={styles.sectionCard}>
-                      <h3 className={styles.sectionTitle}>Basic information</h3>
-                      <div className={styles.fieldGrid}>
-                        <div>
-                          <p className={styles.fieldLabel}>
-                            First name
-                            <span className={styles.fieldRequired}>*</span>
-                          </p>
-                          <Input
-                            value={parsed.basic_info.first_name}
-                            onChange={(e) =>
-                              handleChangeBasic("first_name", e.target.value)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <p className={styles.fieldLabel}>
-                            Last name<span className={styles.fieldRequired}>*</span>
-                          </p>
-                          <Input
-                            value={parsed.basic_info.last_name}
-                            onChange={(e) =>
-                              handleChangeBasic("last_name", e.target.value)
-                            }
-                          />
-                        </div>
-                        <div className={styles.fieldFull}>
-                          <p className={styles.fieldLabel}>Headline / full name</p>
-                          <Input
-                            value={parsed.basic_info.full_name}
-                            onChange={(e) =>
-                              handleChangeBasic("full_name", e.target.value)
-                            }
-                          />
-                        </div>
+              {step === "profile" && (
+                <section className={styles.sectionCard}>
+                  <h3 className={styles.sectionTitle}>Basic information</h3>
+                  <div className={styles.fieldGrid}>
+                    <div>
+                      <p className={styles.fieldLabel}>
+                        First name
+                        <span className={styles.fieldRequired}>*</span>
+                      </p>
+                      <Input
+                        value={parsed.basic_info.first_name}
+                        onChange={(e) =>
+                          handleChangeBasic("first_name", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className={styles.fieldLabel}>
+                        Last name<span className={styles.fieldRequired}>*</span>
+                      </p>
+                      <Input
+                        value={parsed.basic_info.last_name}
+                        onChange={(e) =>
+                          handleChangeBasic("last_name", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className={styles.fieldFull}>
+                      <p className={styles.fieldLabel}>Headline / full name</p>
+                      <Input
+                        value={parsed.basic_info.full_name}
+                        onChange={(e) =>
+                          handleChangeBasic("full_name", e.target.value)
+                        }
+                      />
+                    </div>
                     <div>
                       <p className={styles.fieldLabel}>
                         Email<span className={styles.fieldRequired}>*</span>
@@ -1234,11 +1219,11 @@ export function ResumeIntake({
                             <div>
                               <p className={styles.fieldLabel}>Job title</p>
                               <Input
-                                value={role.job_title}
+                                value={role.title}
                                 onChange={(e) =>
                                   handleChangeWorkExperience(
                                     index,
-                                    "job_title",
+                                    "title",
                                     e.target.value
                                   )
                                 }

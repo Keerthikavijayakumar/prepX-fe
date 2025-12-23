@@ -1,23 +1,41 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
-import { 
-  Pencil, Upload, Briefcase, GraduationCap, 
-  Award, Code, Languages, Heart,
-  MapPin, Mail, Phone, Linkedin, Github, Globe,
-  Plus, X, Loader2, Trash2, FileText, AlertCircle, CheckCircle2, RefreshCw
+import {
+  Pencil,
+  Upload,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Code,
+  Languages,
+  Heart,
+  MapPin,
+  Mail,
+  Phone,
+  Linkedin,
+  Github,
+  Globe,
+  Plus,
+  X,
+  Loader2,
+  Trash2,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
   SheetTitle,
-  SheetFooter
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,25 +53,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createEmptyResume, isFieldEmpty } from "@/lib/resumeUtils";
-import type { 
-  ParsedResume, 
-  ResumeWorkExperience, 
-  ResumeEducation, 
+import type {
+  ParsedResume,
+  ResumeWorkExperience,
+  ResumeEducation,
   ResumeSkill,
   ResumeProject,
   ResumeCertification,
-  ResumeLanguage
-} from "@/types/resume";
+  ResumeLanguage,
+  ResumeInterest,
+} from "../../types/resume";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-type EditSection = 
-  | "basic" 
-  | "experience" 
-  | "education" 
-  | "skills" 
-  | "projects" 
-  | "certifications" 
+type EditSection =
+  | "basic"
+  | "experience"
+  | "education"
+  | "skills"
+  | "projects"
+  | "certifications"
   | "languages"
   | "interests"
   | null;
@@ -63,7 +82,10 @@ type ResumeProfileProps = {
   onComplete?: () => void;
 };
 
-export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps) {
+export function ResumeProfileComplete({
+  apiUrl,
+  onComplete,
+}: ResumeProfileProps) {
   const [parsedData, setParsedData] = useState<ParsedResume | null>(null);
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
@@ -97,11 +119,12 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
         return;
       }
 
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-      
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
       // Fetch profile data (parsed resume data from users table)
       const profileResponse = await fetch(`${baseUrl}/api/profile`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (profileResponse.ok) {
@@ -117,7 +140,7 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
       // Fetch resume metadata (filename, etc.)
       const resumeResponse = await fetch(`${baseUrl}/api/resume/current`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (resumeResponse.ok) {
@@ -141,7 +164,11 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
   const handleFileSelection = async (file: File) => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`File size exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
+      setError(
+        `File size exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(
+          1
+        )}MB)`
+      );
       return;
     }
 
@@ -161,7 +188,8 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       const formData = new FormData();
       formData.append("file", file);
 
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/resume`, {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -216,72 +244,101 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
     // Check based on current editing section
     if (editingSection === "basic") {
-      return !!(tempData.basic_info.first_name?.trim() && 
-                tempData.basic_info.last_name?.trim() && 
-                tempData.basic_info.summary?.trim() && 
-                tempData.basic_info.email?.trim());
-    } 
-    else if (editingSection === "experience" && editIndex >= 0) {
+      return !!(
+        tempData.basic_info.first_name?.trim() &&
+        tempData.basic_info.last_name?.trim() &&
+        tempData.basic_info.summary?.trim() &&
+        tempData.basic_info.email?.trim()
+      );
+    } else if (editingSection === "experience" && editIndex >= 0) {
       const exp = tempData.work_experience[editIndex];
-      return !!(exp?.job_title?.trim() && 
-                exp?.company?.trim() && 
-                exp?.start_date?.trim() && 
-                exp?.end_date?.trim());
-    } 
-    else if (editingSection === "education" && editIndex >= 0) {
+      return !!(
+        exp?.title?.trim() &&
+        exp?.company?.trim() &&
+        exp?.start_date?.trim() &&
+        exp?.end_date?.trim()
+      );
+    } else if (editingSection === "education" && editIndex >= 0) {
       const edu = tempData.education[editIndex];
-      return !!(edu?.institution?.trim() && 
-                edu?.degree?.trim() && 
-                edu?.field_of_study?.trim() && 
-                edu?.start_date?.trim() && 
-                edu?.end_date?.trim());
-    } 
-    else if (editingSection === "projects" && editIndex >= 0) {
+      return !!(
+        edu?.institution?.trim() &&
+        edu?.degree?.trim() &&
+        edu?.field_of_study?.trim() &&
+        edu?.start_date?.trim() &&
+        edu?.end_date?.trim()
+      );
+    } else if (editingSection === "projects" && editIndex >= 0) {
       const proj = tempData.projects[editIndex];
-      return !!(proj?.title?.trim() && 
-                proj?.role?.trim() && 
-                proj?.description?.trim());
+      return !!(
+        proj?.title?.trim() &&
+        proj?.role?.trim() &&
+        proj?.description?.trim()
+      );
     }
 
     return true; // For sections without mandatory fields
   };
 
-  const validateMandatoryFields = (): { valid: boolean; errorMessage?: string } => {
+  const validateMandatoryFields = (): {
+    valid: boolean;
+    errorMessage?: string;
+  } => {
     if (!tempData) return { valid: false, errorMessage: "No data to save" };
 
     // Validate based on current editing section
     if (editingSection === "basic") {
-      if (!tempData.basic_info.first_name?.trim()) return { valid: false, errorMessage: "First Name is required" };
-      if (!tempData.basic_info.last_name?.trim()) return { valid: false, errorMessage: "Last Name is required" };
-      if (!tempData.basic_info.summary?.trim()) return { valid: false, errorMessage: "Professional Summary is required" };
-      if (!tempData.basic_info.email?.trim()) return { valid: false, errorMessage: "Email is required" };
-    } 
-    else if (editingSection === "experience" && editIndex >= 0) {
+      if (!tempData.basic_info.first_name?.trim())
+        return { valid: false, errorMessage: "First Name is required" };
+      if (!tempData.basic_info.last_name?.trim())
+        return { valid: false, errorMessage: "Last Name is required" };
+      if (!tempData.basic_info.summary?.trim())
+        return {
+          valid: false,
+          errorMessage: "Professional Summary is required",
+        };
+      if (!tempData.basic_info.email?.trim())
+        return { valid: false, errorMessage: "Email is required" };
+    } else if (editingSection === "experience" && editIndex >= 0) {
       const exp = tempData.work_experience[editIndex];
-      if (!exp?.job_title?.trim()) return { valid: false, errorMessage: "Job Title is required" };
-      if (!exp?.company?.trim()) return { valid: false, errorMessage: "Company is required" };
-      if (!exp?.start_date?.trim()) return { valid: false, errorMessage: "Start Date is required" };
-      if (!exp?.end_date?.trim()) return { valid: false, errorMessage: "End Date is required" };
-    } 
-    else if (editingSection === "education" && editIndex >= 0) {
+      if (!exp?.title?.trim())
+        return { valid: false, errorMessage: "Job Title is required" };
+      if (!exp?.company?.trim())
+        return { valid: false, errorMessage: "Company is required" };
+      if (!exp?.start_date?.trim())
+        return { valid: false, errorMessage: "Start Date is required" };
+      if (!exp?.end_date?.trim())
+        return { valid: false, errorMessage: "End Date is required" };
+    } else if (editingSection === "education" && editIndex >= 0) {
       const edu = tempData.education[editIndex];
-      if (!edu?.institution?.trim()) return { valid: false, errorMessage: "Institution is required" };
-      if (!edu?.degree?.trim()) return { valid: false, errorMessage: "Degree is required" };
-      if (!edu?.field_of_study?.trim()) return { valid: false, errorMessage: "Field of Study is required" };
-      if (!edu?.start_date?.trim()) return { valid: false, errorMessage: "Start Date is required" };
-      if (!edu?.end_date?.trim()) return { valid: false, errorMessage: "End Date is required" };
-    } 
-    else if (editingSection === "projects" && editIndex >= 0) {
+      if (!edu?.institution?.trim())
+        return { valid: false, errorMessage: "Institution is required" };
+      if (!edu?.degree?.trim())
+        return { valid: false, errorMessage: "Degree is required" };
+      if (!edu?.field_of_study?.trim())
+        return { valid: false, errorMessage: "Field of Study is required" };
+      if (!edu?.start_date?.trim())
+        return { valid: false, errorMessage: "Start Date is required" };
+      if (!edu?.end_date?.trim())
+        return { valid: false, errorMessage: "End Date is required" };
+    } else if (editingSection === "projects" && editIndex >= 0) {
       const proj = tempData.projects[editIndex];
-      if (!proj?.title?.trim()) return { valid: false, errorMessage: "Project Title is required" };
-      if (!proj?.role?.trim()) return { valid: false, errorMessage: "Your Role is required" };
-      if (!proj?.description?.trim()) return { valid: false, errorMessage: "Description is required" };
-    }
-    else if (editingSection === "interests") {
+      if (!proj?.title?.trim())
+        return { valid: false, errorMessage: "Project Title is required" };
+      if (!proj?.role?.trim())
+        return { valid: false, errorMessage: "Your Role is required" };
+      if (!proj?.description?.trim())
+        return { valid: false, errorMessage: "Description is required" };
+    } else if (editingSection === "interests") {
       // Check if any interest is empty
-      const hasEmptyInterest = tempData.interests.some((interest: string) => !interest?.trim());
+      const hasEmptyInterest = tempData.interests.some(
+        (interest: ResumeInterest) => !interest?.name?.trim()
+      );
       if (hasEmptyInterest) {
-        return { valid: false, errorMessage: "All interests must have a value. Please remove empty interests or fill them in." };
+        return {
+          valid: false,
+          errorMessage:
+            "All interests must have a value. Please remove empty interests or fill them in.",
+        };
       }
     }
 
@@ -294,13 +351,15 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     // Validate mandatory fields
     const validation = validateMandatoryFields();
     if (!validation.valid) {
-      setSheetError(validation.errorMessage || "Please fill in all required fields");
+      setSheetError(
+        validation.errorMessage || "Please fill in all required fields"
+      );
       return;
     }
 
     setSaving(true);
     setSheetError(null); // Clear any previous errors
-    
+
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
@@ -311,16 +370,17 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
         return;
       }
 
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: tempData,
-          editing_section: editingSection
+          editing_section: editingSection,
         }),
       });
 
@@ -335,9 +395,12 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
         // Handle validation errors from backend
         try {
           const errorBody = await response.json();
-          if (errorBody.validation_errors && Array.isArray(errorBody.validation_errors)) {
+          if (
+            errorBody.validation_errors &&
+            Array.isArray(errorBody.validation_errors)
+          ) {
             // Display validation errors in the sheet
-            setSheetError(errorBody.validation_errors.join(', '));
+            setSheetError(errorBody.validation_errors.join(", "));
           } else if (errorBody.error) {
             setSheetError(errorBody.error);
           } else {
@@ -366,7 +429,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
   const closeEditSheet = () => {
     if (hasUnsavedChanges) {
-      const confirmClose = window.confirm("You have unsaved changes. Are you sure you want to close without saving?");
+      const confirmClose = window.confirm(
+        "You have unsaved changes. Are you sure you want to close without saving?"
+      );
       if (!confirmClose) return;
     }
 
@@ -376,7 +441,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
   const handleSheetOpenChange = (open: boolean) => {
     if (!open) {
       if (hasUnsavedChanges) {
-        const confirmClose = window.confirm("You have unsaved changes. Are you sure you want to close without saving?");
+        const confirmClose = window.confirm(
+          "You have unsaved changes. Are you sure you want to close without saving?"
+        );
         if (!confirmClose) return;
       }
       setSheetOpen(false);
@@ -400,7 +467,7 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!tempData) return;
     const updated = {
       ...tempData,
-      basic_info: { ...tempData.basic_info, [field]: value }
+      basic_info: { ...tempData.basic_info, [field]: value },
     };
     setTempData(updated);
     setHasUnsavedChanges(true);
@@ -412,8 +479,8 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       ...tempData,
       basic_info: {
         ...tempData.basic_info,
-        location: { ...tempData.basic_info.location, [field]: value }
-      }
+        location: { ...(tempData.basic_info.location || {}), [field]: value },
+      },
     };
     setTempData(updated);
     setHasUnsavedChanges(true);
@@ -422,18 +489,18 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
   const addExperience = () => {
     if (!parsedData) return;
     const newExp: ResumeWorkExperience = {
-      job_title: "",
+      title: "",
       company: "",
       location: "",
       start_date: "",
       end_date: "",
       currently_working: false,
       description: "",
-      achievements: []
+      achievements: [],
     };
     const updated = {
       ...parsedData,
-      work_experience: [...parsedData.work_experience, newExp]
+      work_experience: [...parsedData.work_experience, newExp],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -453,28 +520,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      work_experience: parsedData.work_experience.filter((_, i) => i !== index)
+      work_experience: parsedData.work_experience.filter(
+        (_: ResumeWorkExperience, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "experience"
+          editing_section: "experience",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         // Only update UI after successful backend save
@@ -500,11 +570,11 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       start_date: "",
       end_date: "",
       grade: "",
-      location: ""
+      location: "",
     };
     const updated = {
       ...parsedData,
-      education: [...parsedData.education, newEdu]
+      education: [...parsedData.education, newEdu],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -524,28 +594,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      education: parsedData.education.filter((_, i) => i !== index)
+      education: parsedData.education.filter(
+        (_: ResumeEducation, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "education"
+          editing_section: "education",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -563,10 +636,10 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
   const addSkill = () => {
     if (!parsedData) return;
-    const newSkill: ResumeSkill = { name: "", level: "", category: "" };
+    const newSkill: ResumeSkill = { name: "", category: "" };
     const updated = {
       ...parsedData,
-      skills: [...parsedData.skills, newSkill]
+      skills: [...parsedData.skills, newSkill],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -586,28 +659,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      skills: parsedData.skills.filter((_, i) => i !== index)
+      skills: parsedData.skills.filter(
+        (_: ResumeSkill, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "skills"
+          editing_section: "skills",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -626,15 +702,16 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
   const addProject = () => {
     if (!parsedData) return;
     const newProject: ResumeProject = {
+      name: "",
       title: "",
       description: "",
       technologies: [],
       role: "",
-      link: ""
+      link: "",
     };
     const updated = {
       ...parsedData,
-      projects: [...parsedData.projects, newProject]
+      projects: [...parsedData.projects, newProject],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -654,28 +731,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      projects: parsedData.projects.filter((_, i) => i !== index)
+      projects: parsedData.projects.filter(
+        (_: ResumeProject, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "projects"
+          editing_section: "projects",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -699,11 +779,11 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       issue_date: "",
       expiry_date: "",
       credential_id: "",
-      credential_url: ""
+      credential_url: "",
     };
     const updated = {
       ...parsedData,
-      certifications: [...parsedData.certifications, newCert]
+      certifications: [...parsedData.certifications, newCert],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -723,28 +803,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      certifications: parsedData.certifications.filter((_, i) => i !== index)
+      certifications: parsedData.certifications.filter(
+        (_: ResumeCertification, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "certifications"
+          editing_section: "certifications",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -762,10 +845,10 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
   const addLanguage = () => {
     if (!parsedData) return;
-    const newLang: ResumeLanguage = { language: "", proficiency: "" };
+    const newLang: ResumeLanguage = { name: "" };
     const updated = {
       ...parsedData,
-      languages: [...parsedData.languages, newLang]
+      languages: [...parsedData.languages, newLang],
     };
     setTempData(updated);
     setHasUnsavedChanges(false);
@@ -785,28 +868,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      languages: parsedData.languages.filter((_, i) => i !== index)
+      languages: parsedData.languages.filter(
+        (_: ResumeLanguage, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "languages"
+          editing_section: "languages",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -828,7 +914,7 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!currentData) return;
     const updated = {
       ...currentData,
-      interests: [...currentData.interests, ""]
+      interests: [...currentData.interests, { name: "" }],
     };
     setTempData(updated);
     setHasUnsavedChanges(true);
@@ -841,7 +927,7 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
   const updateInterest = (index: number, value: string) => {
     if (!tempData) return;
     const updatedInterests = [...tempData.interests];
-    updatedInterests[index] = value;
+    updatedInterests[index] = { name: value };
     const updated = { ...tempData, interests: updatedInterests };
     setTempData(updated);
     setHasUnsavedChanges(true);
@@ -851,28 +937,31 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     if (!parsedData) return;
     const updated = {
       ...parsedData,
-      interests: parsedData.interests.filter((_, i) => i !== index)
+      interests: parsedData.interests.filter(
+        (_: ResumeInterest, i: number) => i !== index
+      ),
     };
-    
+
     // Save deletion to backend first
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-      
-      const baseUrl = apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+      const baseUrl =
+        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: updated,
-          editing_section: "interests"
+          editing_section: "interests",
         }),
       });
-      
+
       if (response.ok) {
         const responseBody = await response.json();
         setParsedData(updated);
@@ -895,7 +984,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetContent className="w-full sm:max-w-2xl flex flex-col">
           <SheetHeader className="sticky top-0 z-10 bg-background pb-4 border-b">
-            <SheetTitle className="capitalize">Edit {editingSection}</SheetTitle>
+            <SheetTitle className="capitalize">
+              Edit {editingSection}
+            </SheetTitle>
             <SheetDescription>
               Make changes to your {editingSection} information
             </SheetDescription>
@@ -912,7 +1003,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     <Input
                       id="first_name"
                       value={tempData.basic_info.first_name}
-                      onChange={(e) => updateBasicInfo("first_name", e.target.value)}
+                      onChange={(e) =>
+                        updateBasicInfo("first_name", e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -923,22 +1016,29 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     <Input
                       id="last_name"
                       value={tempData.basic_info.last_name}
-                      onChange={(e) => updateBasicInfo("last_name", e.target.value)}
+                      onChange={(e) =>
+                        updateBasicInfo("last_name", e.target.value)
+                      }
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="full_name" className="mb-2 block">Full Name / Headline</Label>
+                  <Label htmlFor="full_name" className="mb-2 block">
+                    Full Name / Headline
+                  </Label>
                   <Input
                     id="full_name"
                     value={tempData.basic_info.full_name}
-                    onChange={(e) => updateBasicInfo("full_name", e.target.value)}
+                    onChange={(e) =>
+                      updateBasicInfo("full_name", e.target.value)
+                    }
                   />
                 </div>
                 <div>
                   <Label htmlFor="summary" className="mb-2 block">
-                    Professional Summary <span className="text-destructive">*</span>
+                    Professional Summary{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Textarea
                     id="summary"
@@ -962,9 +1062,11 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone" className="mb-2 block">Phone</Label>
+                    <Label htmlFor="phone" className="mb-2 block">
+                      Phone
+                    </Label>
                     <PhoneInputComponent
-                      value={tempData.basic_info.phone}
+                      value={tempData.basic_info.phone || ""}
                       onChange={(value) => updateBasicInfo("phone", value)}
                       placeholder="Enter phone number"
                     />
@@ -972,52 +1074,76 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 </div>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
-                    <Label htmlFor="city" className="mb-2 block">City</Label>
+                    <Label htmlFor="city" className="mb-2 block">
+                      City
+                    </Label>
                     <Input
                       id="city"
-                      value={tempData.basic_info.location.city}
-                      onChange={(e) => updateBasicLocation("city", e.target.value)}
+                      value={tempData.basic_info.location?.city || ""}
+                      onChange={(e) =>
+                        updateBasicLocation("city", e.target.value)
+                      }
                     />
                   </div>
                   <div>
-                    <Label htmlFor="state" className="mb-2 block">State</Label>
+                    <Label htmlFor="state" className="mb-2 block">
+                      State
+                    </Label>
                     <Input
                       id="state"
-                      value={tempData.basic_info.location.state}
-                      onChange={(e) => updateBasicLocation("state", e.target.value)}
+                      value={tempData.basic_info.location?.state || ""}
+                      onChange={(e) =>
+                        updateBasicLocation("state", e.target.value)
+                      }
                     />
                   </div>
                   <div>
-                    <Label htmlFor="country" className="mb-2 block">Country</Label>
+                    <Label htmlFor="country" className="mb-2 block">
+                      Country
+                    </Label>
                     <Input
                       id="country"
-                      value={tempData.basic_info.location.country}
-                      onChange={(e) => updateBasicLocation("country", e.target.value)}
+                      value={tempData.basic_info.location?.country || ""}
+                      onChange={(e) =>
+                        updateBasicLocation("country", e.target.value)
+                      }
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="linkedin" className="mb-2 block">LinkedIn URL</Label>
+                  <Label htmlFor="linkedin" className="mb-2 block">
+                    LinkedIn URL
+                  </Label>
                   <Input
                     id="linkedin"
-                    value={tempData.basic_info.linkedin}
-                    onChange={(e) => updateBasicInfo("linkedin", e.target.value)}
+                    value={tempData.basic_info.linkedin_url || ""}
+                    onChange={(e) =>
+                      updateBasicInfo("linkedin_url", e.target.value)
+                    }
                   />
                 </div>
                 <div>
-                  <Label htmlFor="github" className="mb-2 block">GitHub URL</Label>
+                  <Label htmlFor="github" className="mb-2 block">
+                    GitHub URL
+                  </Label>
                   <Input
                     id="github"
-                    value={tempData.basic_info.github}
-                    onChange={(e) => updateBasicInfo("github", e.target.value)}
+                    value={tempData.basic_info.github_url || ""}
+                    onChange={(e) =>
+                      updateBasicInfo("github_url", e.target.value)
+                    }
                   />
                 </div>
                 <div>
-                  <Label htmlFor="portfolio" className="mb-2 block">Portfolio URL</Label>
+                  <Label htmlFor="portfolio" className="mb-2 block">
+                    Portfolio URL
+                  </Label>
                   <Input
                     id="portfolio"
-                    value={tempData.basic_info.portfolio}
-                    onChange={(e) => updateBasicInfo("portfolio", e.target.value)}
+                    value={tempData.basic_info.portfolio_url || ""}
+                    onChange={(e) =>
+                      updateBasicInfo("portfolio_url", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -1026,13 +1152,15 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
             {editingSection === "experience" && editIndex >= 0 && (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="job_title" className="mb-2 block">
+                  <Label htmlFor="title" className="mb-2 block">
                     Job Title <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="job_title"
-                    value={tempData.work_experience[editIndex]?.job_title || ""}
-                    onChange={(e) => updateExperience(editIndex, "job_title", e.target.value)}
+                    id="title"
+                    value={tempData.work_experience[editIndex]?.title || ""}
+                    onChange={(e) =>
+                      updateExperience(editIndex, "title", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -1044,16 +1172,24 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     <Input
                       id="company"
                       value={tempData.work_experience[editIndex]?.company || ""}
-                      onChange={(e) => updateExperience(editIndex, "company", e.target.value)}
+                      onChange={(e) =>
+                        updateExperience(editIndex, "company", e.target.value)
+                      }
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="exp_location" className="mb-2 block">Location</Label>
+                    <Label htmlFor="exp_location" className="mb-2 block">
+                      Location
+                    </Label>
                     <Input
                       id="exp_location"
-                      value={tempData.work_experience[editIndex]?.location || ""}
-                      onChange={(e) => updateExperience(editIndex, "location", e.target.value)}
+                      value={
+                        tempData.work_experience[editIndex]?.location || ""
+                      }
+                      onChange={(e) =>
+                        updateExperience(editIndex, "location", e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -1063,39 +1199,66 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                       Start Date <span className="text-destructive">*</span>
                     </Label>
                     <DatePicker
-                      value={tempData.work_experience[editIndex]?.start_date || ""}
-                      onChange={(value) => updateExperience(editIndex, "start_date", value)}
+                      value={
+                        tempData.work_experience[editIndex]?.start_date || ""
+                      }
+                      onChange={(value) =>
+                        updateExperience(editIndex, "start_date", value)
+                      }
                       placeholder="Select start date"
                       monthYearOnly
                     />
                   </div>
                   <div>
                     <Label htmlFor="end_date" className="mb-2 block">
-                      End Date / Present <span className="text-destructive">*</span>
+                      End Date / Present{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <DatePicker
-                      value={tempData.work_experience[editIndex]?.end_date || ""}
-                      onChange={(value) => updateExperience(editIndex, "end_date", value)}
+                      value={
+                        tempData.work_experience[editIndex]?.end_date || ""
+                      }
+                      onChange={(value) =>
+                        updateExperience(editIndex, "end_date", value)
+                      }
                       placeholder="Select end date"
                       monthYearOnly
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="description" className="mb-2 block">Description</Label>
+                  <Label htmlFor="description" className="mb-2 block">
+                    Description
+                  </Label>
                   <Textarea
                     id="description"
                     rows={4}
-                    value={tempData.work_experience[editIndex]?.description || ""}
-                    onChange={(e) => updateExperience(editIndex, "description", e.target.value)}
+                    value={
+                      tempData.work_experience[editIndex]?.description || ""
+                    }
+                    onChange={(e) =>
+                      updateExperience(editIndex, "description", e.target.value)
+                    }
                   />
                 </div>
                 <div>
-                  <Label className="mb-2 block">Achievements (one per line)</Label>
+                  <Label className="mb-2 block">
+                    Achievements (one per line)
+                  </Label>
                   <Textarea
                     rows={4}
-                    value={tempData.work_experience[editIndex]?.achievements?.join("\n") || ""}
-                    onChange={(e) => updateExperience(editIndex, "achievements", e.target.value.split("\n").filter(Boolean))}
+                    value={
+                      tempData.work_experience[editIndex]?.achievements?.join(
+                        "\n"
+                      ) || ""
+                    }
+                    onChange={(e) =>
+                      updateExperience(
+                        editIndex,
+                        "achievements",
+                        e.target.value.split("\n").filter(Boolean)
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -1110,7 +1273,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                   <Input
                     id="institution"
                     value={tempData.education[editIndex]?.institution || ""}
-                    onChange={(e) => updateEducation(editIndex, "institution", e.target.value)}
+                    onChange={(e) =>
+                      updateEducation(editIndex, "institution", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -1122,7 +1287,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     <Input
                       id="degree"
                       value={tempData.education[editIndex]?.degree || ""}
-                      onChange={(e) => updateEducation(editIndex, "degree", e.target.value)}
+                      onChange={(e) =>
+                        updateEducation(editIndex, "degree", e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -1132,8 +1299,16 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     </Label>
                     <Input
                       id="field_of_study"
-                      value={tempData.education[editIndex]?.field_of_study || ""}
-                      onChange={(e) => updateEducation(editIndex, "field_of_study", e.target.value)}
+                      value={
+                        tempData.education[editIndex]?.field_of_study || ""
+                      }
+                      onChange={(e) =>
+                        updateEducation(
+                          editIndex,
+                          "field_of_study",
+                          e.target.value
+                        )
+                      }
                       required
                     />
                   </div>
@@ -1145,28 +1320,37 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     </Label>
                     <DatePicker
                       value={tempData.education[editIndex]?.start_date || ""}
-                      onChange={(value) => updateEducation(editIndex, "start_date", value)}
+                      onChange={(value) =>
+                        updateEducation(editIndex, "start_date", value)
+                      }
                       placeholder="Select start date"
                       monthYearOnly
                     />
                   </div>
                   <div>
                     <Label htmlFor="edu_end" className="mb-2 block">
-                      End Date / Ongoing <span className="text-destructive">*</span>
+                      End Date / Ongoing{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <DatePicker
                       value={tempData.education[editIndex]?.end_date || ""}
-                      onChange={(value) => updateEducation(editIndex, "end_date", value)}
+                      onChange={(value) =>
+                        updateEducation(editIndex, "end_date", value)
+                      }
                       placeholder="Select end date"
                       monthYearOnly
                     />
                   </div>
                   <div>
-                    <Label htmlFor="grade" className="mb-2 block">Grade/GPA</Label>
+                    <Label htmlFor="grade" className="mb-2 block">
+                      Grade/GPA
+                    </Label>
                     <Input
                       id="grade"
                       value={tempData.education[editIndex]?.grade || ""}
-                      onChange={(e) => updateEducation(editIndex, "grade", e.target.value)}
+                      onChange={(e) =>
+                        updateEducation(editIndex, "grade", e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -1175,28 +1359,34 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
             {editingSection === "skills" && (
               <div className="space-y-4">
-                {tempData.skills.map((skill, idx) => (
+                {tempData.skills.map((skill: ResumeSkill, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
                     <div className="flex-1">
                       <Label className="mb-2 block">Skill Name</Label>
                       <Input
                         placeholder="Skill name"
                         value={skill.name}
-                        onChange={(e) => updateSkill(idx, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateSkill(idx, "name", e.target.value)
+                        }
                       />
                     </div>
                     <div className="w-48">
                       <Label className="mb-2 block">Level</Label>
                       <Select
                         value={skill.level}
-                        onValueChange={(value) => updateSkill(idx, "level", value)}
+                        onValueChange={(value) =>
+                          updateSkill(idx, "level", value)
+                        }
                       >
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder="Select level" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Beginner">Beginner</SelectItem>
-                          <SelectItem value="Intermediate">Intermediate</SelectItem>
+                          <SelectItem value="Intermediate">
+                            Intermediate
+                          </SelectItem>
                           <SelectItem value="Advanced">Advanced</SelectItem>
                           <SelectItem value="Expert">Expert</SelectItem>
                         </SelectContent>
@@ -1213,7 +1403,12 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     </Button>
                   </div>
                 ))}
-                <Button type="button" variant="outline" onClick={addSkill} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addSkill}
+                  className="w-full"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Skill
                 </Button>
@@ -1229,7 +1424,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                   <Input
                     id="proj_title"
                     value={tempData.projects[editIndex]?.title || ""}
-                    onChange={(e) => updateProject(editIndex, "title", e.target.value)}
+                    onChange={(e) =>
+                      updateProject(editIndex, "title", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -1240,7 +1437,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                   <Input
                     id="proj_role"
                     value={tempData.projects[editIndex]?.role || ""}
-                    onChange={(e) => updateProject(editIndex, "role", e.target.value)}
+                    onChange={(e) =>
+                      updateProject(editIndex, "role", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -1252,24 +1451,34 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     id="proj_desc"
                     rows={4}
                     value={tempData.projects[editIndex]?.description || ""}
-                    onChange={(e) => updateProject(editIndex, "description", e.target.value)}
+                    onChange={(e) =>
+                      updateProject(editIndex, "description", e.target.value)
+                    }
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="proj_tech" className="mb-2 block">Technologies</Label>
+                  <Label htmlFor="proj_tech" className="mb-2 block">
+                    Technologies
+                  </Label>
                   <MultiSelect
                     value={tempData.projects[editIndex]?.technologies || []}
-                    onChange={(value) => updateProject(editIndex, "technologies", value)}
+                    onChange={(value) =>
+                      updateProject(editIndex, "technologies", value)
+                    }
                     placeholder="Add technologies..."
                   />
                 </div>
                 <div>
-                  <Label htmlFor="proj_link" className="mb-2 block">Project Link</Label>
+                  <Label htmlFor="proj_link" className="mb-2 block">
+                    Project Link
+                  </Label>
                   <Input
                     id="proj_link"
                     value={tempData.projects[editIndex]?.link || ""}
-                    onChange={(e) => updateProject(editIndex, "link", e.target.value)}
+                    onChange={(e) =>
+                      updateProject(editIndex, "link", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -1278,47 +1487,77 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
             {editingSection === "certifications" && editIndex >= 0 && (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="cert_name" className="mb-2 block">Certification Name</Label>
+                  <Label htmlFor="cert_name" className="mb-2 block">
+                    Certification Name
+                  </Label>
                   <Input
                     id="cert_name"
                     value={tempData.certifications[editIndex]?.name || ""}
-                    onChange={(e) => updateCertification(editIndex, "name", e.target.value)}
+                    onChange={(e) =>
+                      updateCertification(editIndex, "name", e.target.value)
+                    }
                   />
                 </div>
                 <div>
-                  <Label htmlFor="cert_issuer" className="mb-2 block">Issuer</Label>
+                  <Label htmlFor="cert_issuer" className="mb-2 block">
+                    Issuer
+                  </Label>
                   <Input
                     id="cert_issuer"
                     value={tempData.certifications[editIndex]?.issuer || ""}
-                    onChange={(e) => updateCertification(editIndex, "issuer", e.target.value)}
+                    onChange={(e) =>
+                      updateCertification(editIndex, "issuer", e.target.value)
+                    }
                   />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="cert_issue" className="mb-2 block">Issue Date</Label>
+                    <Label htmlFor="cert_issue" className="mb-2 block">
+                      Issue Date
+                    </Label>
                     <DatePicker
-                      value={tempData.certifications[editIndex]?.issue_date || ""}
-                      onChange={(value) => updateCertification(editIndex, "issue_date", value)}
+                      value={
+                        tempData.certifications[editIndex]?.issue_date || ""
+                      }
+                      onChange={(value) =>
+                        updateCertification(editIndex, "issue_date", value)
+                      }
                       placeholder="Select issue date"
                       monthYearOnly
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cert_expiry" className="mb-2 block">Expiry Date</Label>
+                    <Label htmlFor="cert_expiry" className="mb-2 block">
+                      Expiry Date
+                    </Label>
                     <DatePicker
-                      value={tempData.certifications[editIndex]?.expiry_date || ""}
-                      onChange={(value) => updateCertification(editIndex, "expiry_date", value)}
+                      value={
+                        tempData.certifications[editIndex]?.expiry_date || ""
+                      }
+                      onChange={(value) =>
+                        updateCertification(editIndex, "expiry_date", value)
+                      }
                       placeholder="Select expiry date"
                       monthYearOnly
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="cert_url" className="mb-2 block">Credential URL</Label>
+                  <Label htmlFor="cert_url" className="mb-2 block">
+                    Credential URL
+                  </Label>
                   <Input
                     id="cert_url"
-                    value={tempData.certifications[editIndex]?.credential_url || ""}
-                    onChange={(e) => updateCertification(editIndex, "credential_url", e.target.value)}
+                    value={
+                      tempData.certifications[editIndex]?.credential_url || ""
+                    }
+                    onChange={(e) =>
+                      updateCertification(
+                        editIndex,
+                        "credential_url",
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -1326,30 +1565,40 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
             {editingSection === "languages" && (
               <div className="space-y-4">
-                {tempData.languages.map((lang, idx) => (
+                {tempData.languages.map((lang: ResumeLanguage, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
                     <div className="flex-1">
                       <Label className="mb-2 block">Language</Label>
                       <Input
                         placeholder="Language"
                         value={lang.language}
-                        onChange={(e) => updateLanguage(idx, "language", e.target.value)}
+                        onChange={(e) =>
+                          updateLanguage(idx, "language", e.target.value)
+                        }
                       />
                     </div>
                     <div className="w-48">
                       <Label className="mb-2 block">Proficiency</Label>
                       <Select
                         value={lang.proficiency}
-                        onValueChange={(value) => updateLanguage(idx, "proficiency", value)}
+                        onValueChange={(value) =>
+                          updateLanguage(idx, "proficiency", value)
+                        }
                       >
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder="Select proficiency" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Elementary">Elementary</SelectItem>
-                          <SelectItem value="Limited Working">Limited Working</SelectItem>
-                          <SelectItem value="Professional Working">Professional Working</SelectItem>
-                          <SelectItem value="Full Professional">Full Professional</SelectItem>
+                          <SelectItem value="Limited Working">
+                            Limited Working
+                          </SelectItem>
+                          <SelectItem value="Professional Working">
+                            Professional Working
+                          </SelectItem>
+                          <SelectItem value="Full Professional">
+                            Full Professional
+                          </SelectItem>
                           <SelectItem value="Native">Native</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1365,7 +1614,12 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                     </Button>
                   </div>
                 ))}
-                <Button type="button" variant="outline" onClick={addLanguage} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addLanguage}
+                  className="w-full"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Language
                 </Button>
@@ -1374,33 +1628,45 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
             {editingSection === "interests" && (
               <div className="space-y-4">
-                {tempData.interests.map((interest, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <Input
-                      placeholder="Interest"
-                      value={interest}
-                      onChange={(e) => updateInterest(idx, e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (!tempData) return;
-                        const updatedInterests = tempData.interests.filter((_, i) => i !== idx);
-                        const updated = { ...tempData, interests: updatedInterests };
-                        setTempData(updated);
-                        setHasUnsavedChanges(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button type="button" variant="outline" onClick={addInterest} className="w-full">
+                {tempData.interests.map(
+                  (interest: ResumeInterest, idx: number) => (
+                    <div key={idx} className="flex gap-2">
+                      <Input
+                        placeholder="Interest"
+                        value={interest.name || ""}
+                        onChange={(e) => updateInterest(idx, e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (!tempData) return;
+                          const updatedInterests = tempData.interests.filter(
+                            (_: any, i: number) => i !== idx
+                          );
+                          const updated = {
+                            ...tempData,
+                            interests: updatedInterests,
+                          };
+                          setTempData(updated);
+                          setHasUnsavedChanges(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addInterest}
+                  className="w-full"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Interest
-                </Button> 
+                </Button>
               </div>
             )}
           </div>
@@ -1411,9 +1677,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    {sheetError.includes(',') ? (
+                    {sheetError.includes(",") ? (
                       <ul className="list-disc list-inside space-y-1">
-                        {sheetError.split(',').map((error, idx) => (
+                        {sheetError.split(",").map((error, idx) => (
                           <li key={idx}>{error.trim()}</li>
                         ))}
                       </ul>
@@ -1428,9 +1694,11 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
               <Button variant="outline" onClick={closeEditSheet}>
                 Close
               </Button>
-              <Button 
-                onClick={saveSheetData} 
-                disabled={saving || !hasUnsavedChanges || !checkMandatoryFieldsFilled()}
+              <Button
+                onClick={saveSheetData}
+                disabled={
+                  saving || !hasUnsavedChanges || !checkMandatoryFieldsFilled()
+                }
               >
                 {saving ? (
                   <>
@@ -1453,7 +1721,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/20">
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading your profile...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Loading your profile...
+          </p>
         </div>
       </div>
     );
@@ -1464,9 +1734,12 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
         <div className="mx-auto max-w-4xl px-6">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">Build Your Profile</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Build Your Profile
+            </h1>
             <p className="mt-2 text-muted-foreground">
-              Get started by uploading your resume or entering your details manually
+              Get started by uploading your resume or entering your details
+              manually
             </p>
           </div>
 
@@ -1478,7 +1751,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                   <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold">Parsing your resume...</h3>
+                  <h3 className="text-lg font-semibold">
+                    Parsing your resume...
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Our AI is extracting and structuring your information
                   </p>
@@ -1489,11 +1764,21 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 <div className="grid gap-6 md:grid-cols-2">
                   <div
                     className={`group cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-all ${
-                      isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"
+                      isDragging
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50 hover:bg-muted/30"
                     }`}
-                    onClick={() => document.getElementById("resume-upload")?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                    onClick={() =>
+                      document.getElementById("resume-upload")?.click()
+                    }
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                    }}
                     onDrop={handleDrop}
                   >
                     <div className="flex flex-col items-center gap-4">
@@ -1502,9 +1787,13 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                       </div>
                       <div>
                         <h3 className="font-semibold">Upload Resume</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">AI will parse your resume automatically</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          AI will parse your resume automatically
+                        </p>
                       </div>
-                      <Badge variant="outline" className="mt-2">PDF or DOCX • Max 5MB</Badge>
+                      <Badge variant="outline" className="mt-2">
+                        PDF or DOCX • Max 5MB
+                      </Badge>
                     </div>
                     <input
                       id="resume-upload"
@@ -1523,9 +1812,13 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                       </div>
                       <div>
                         <h3 className="font-semibold">Manual Entry</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">Fill in your details section by section</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Fill in your details section by section
+                        </p>
                       </div>
-                      <Button onClick={startManualEntry} className="mt-2">Start Building</Button>
+                      <Button onClick={startManualEntry} className="mt-2">
+                        Start Building
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1542,7 +1835,16 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
     );
   }
 
-  const { basic_info, work_experience, education, skills, projects, certifications, languages, interests } = parsedData;
+  const {
+    basic_info,
+    work_experience,
+    education,
+    skills,
+    projects,
+    certifications,
+    languages,
+    interests,
+  } = parsedData;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-background via-primary/5 to-background py-8">
@@ -1555,7 +1857,9 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Parsing your resume...</h3>
+                <h3 className="text-lg font-semibold">
+                  Parsing your resume...
+                </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Our AI is extracting and structuring your information
                 </p>
@@ -1574,462 +1878,305 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
-          <Card className="group overflow-hidden border-0 shadow-xl transition-all duration-300 hover:shadow-2xl pt-0">
-            <div className="relative h-24 overflow-hidden bg-gradient-to-r from-primary via-primary/80 to-primary/60">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
-            </div>
-            <div className="relative px-6 pb-6 -mt-2">
-              <div className="absolute -top-12 left-6 flex h-24 w-24 items-center justify-center rounded-2xl border-4 border-background bg-gradient-to-br from-primary via-primary to-primary/70 text-2xl font-bold text-white shadow-2xl ring-4 ring-primary/20 transition-transform duration-300 group-hover:scale-105">
-                {basic_info.first_name?.[0]}{basic_info.last_name?.[0]}
+            <Card className="group overflow-hidden border-0 shadow-xl transition-all duration-300 hover:shadow-2xl pt-0">
+              <div className="relative h-24 overflow-hidden bg-gradient-to-r from-primary via-primary/80 to-primary/60">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
               </div>
-              <div className="ml-32 pt-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold leading-none tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      {basic_info.full_name || `${basic_info.first_name} ${basic_info.last_name}`}
-                    </h2>
-                    {basic_info.summary && (
-                      <p className="mt-2 text-base text-muted-foreground leading-relaxed">{basic_info.summary}</p>
-                    )}
-                    <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      {basic_info.location?.city && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                          <MapPin className="h-4 w-4" />
-                          {basic_info.location.city}, {basic_info.location.country}
-                        </span>
+              <div className="relative px-6 pb-6 -mt-2">
+                <div className="absolute -top-12 left-6 flex h-24 w-24 items-center justify-center rounded-2xl border-4 border-background bg-gradient-to-br from-primary via-primary to-primary/70 text-2xl font-bold text-white shadow-2xl ring-4 ring-primary/20 transition-transform duration-300 group-hover:scale-105">
+                  {basic_info.first_name?.[0]}
+                  {basic_info.last_name?.[0]}
+                </div>
+                <div className="ml-32 pt-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-3xl font-bold leading-none tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                        {basic_info.full_name ||
+                          `${basic_info.first_name} ${basic_info.last_name}`}
+                      </h2>
+                      {basic_info.summary && (
+                        <p className="mt-2 text-base text-muted-foreground leading-relaxed">
+                          {basic_info.summary}
+                        </p>
                       )}
-                      {basic_info.email && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                          <Mail className="h-4 w-4" />
-                          {basic_info.email}
-                        </span>
-                      )}
-                      {basic_info.phone && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                          <Phone className="h-4 w-4" />
-                          {basic_info.phone}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      {basic_info.linkedin && (
-                        <a href={basic_info.linkedin} target="_blank" rel="noopener noreferrer">
-                          <Badge variant="outline" className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md">
-                            <Linkedin className="mr-1 h-3 w-3" />
+                      <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                        {basic_info.location?.city && (
+                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
+                            <MapPin className="h-4 w-4" />
+                            {basic_info.location.city},{" "}
+                            {basic_info.location.country}
+                          </span>
+                        )}
+                        {basic_info.linkedin_url && (
+                          <a
+                            href={basic_info.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted"
+                          >
+                            <Linkedin className="h-4 w-4" />
                             LinkedIn
-                          </Badge>
-                        </a>
-                      )}
-                      {basic_info.github && (
-                        <a href={basic_info.github} target="_blank" rel="noopener noreferrer">
-                          <Badge variant="outline" className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md">
-                            <Github className="mr-1 h-3 w-3" />
-                            GitHub
-                          </Badge>
-                        </a>
-                      )}
-                      {basic_info.portfolio && (
-                        <a href={basic_info.portfolio} target="_blank" rel="noopener noreferrer">
-                          <Badge variant="outline" className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md">
-                            <Globe className="mr-1 h-3 w-3" />
-                            Portfolio
-                          </Badge>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openEditSheet("basic")}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Experience</h3>
-                {work_experience.length === 0 && (
-                  <Badge variant="outline" className="border-amber-500/50 bg-amber-50 text-amber-700 dark:bg-amber-950/20 font-medium">
-                    Empty
-                  </Badge>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addExperience}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Add
-              </Button>
-            </div>
-            {work_experience.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                <AlertCircle className="h-8 w-8 text-amber-600" />
-                <p className="mt-2 text-sm font-medium text-amber-600">No work experience added</p>
-                <Button variant="outline" size="sm" onClick={addExperience} className="mt-4">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Add Your First Experience
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-0">
-                {[...work_experience]
-                  .sort((a, b) => {
-                    const parseDate = (dateStr: string) => {
-                      if (dateStr === "Present") return new Date();
-                      const [month, year] = dateStr.split('/');
-                      return new Date(parseInt(year), parseInt(month) - 1);
-                    };
-                    const dateA = parseDate(a.start_date);
-                    const dateB = parseDate(b.start_date);
-                    return dateB.getTime() - dateA.getTime();
-                  })
-                  .map((exp, idx) => (
-                  <div key={idx} className="group/item relative border-l-2 border-primary/30 pl-8 pb-6 last:pb-0 transition-all hover:border-primary/60">
-                    <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-primary bg-background shadow-lg shadow-primary/20 transition-all group-hover/item:scale-125 group-hover/item:shadow-primary/40" />
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-lg">{exp.job_title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {exp.company} • {exp.location}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {exp.start_date} - {exp.currently_working ? "Present" : exp.end_date}
-                        </p>
-                        {exp.description && (
-                          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{exp.description}</p>
+                          </a>
                         )}
-                        {exp.achievements && exp.achievements.length > 0 && (
-                          <ul className="mt-2 space-y-1 text-sm">
-                            {exp.achievements.map((achievement, i) => (
-                              <li key={i} className="flex gap-2">
-                                <span className="text-primary">•</span>
-                                <span>{achievement}</span>
-                              </li>
-                            ))}
-                          </ul>
+                        {basic_info.email && (
+                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
+                            <Mail className="h-4 w-4" />
+                            {basic_info.email}
+                          </span>
+                        )}
+                        {basic_info.phone && (
+                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
+                            <Phone className="h-4 w-4" />
+                            {basic_info.phone}
+                          </span>
                         )}
                       </div>
-                      <div className="flex gap-1 opacity-0 transition-all duration-200 group-hover/item:opacity-100">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditSheet("experience", idx)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteExperience(idx)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <GraduationCap className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Education</h3>
-                {education.length === 0 && (
-                  <Badge variant="outline" className="border-amber-500 text-amber-600">
-                    Empty
-                  </Badge>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addEducation}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Add
-              </Button>
-            </div>
-            {education.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                <AlertCircle className="h-8 w-8 text-amber-600" />
-                <p className="mt-2 text-sm font-medium text-amber-600">No education added</p>
-                <Button variant="outline" size="sm" onClick={addEducation} className="mt-4">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Add Your First Education
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-0">
-                {education.map((edu, idx) => (
-                  <div key={idx} className="group/item relative border-l-2 border-primary/30 pl-8 pb-6 last:pb-0 transition-all hover:border-primary/60">
-                    <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-primary bg-background shadow-lg shadow-primary/20 transition-all group-hover/item:scale-125 group-hover/item:shadow-primary/40" />
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-lg">{edu.degree}</h4>
-                        <p className="text-sm text-muted-foreground font-medium">
-                          {edu.institution} • {edu.field_of_study}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {edu.start_date} - {edu.end_date}
-                          {edu.grade && ` • ${edu.grade}`}
-                        </p>
-                      </div>
-                      <div className="flex gap-1 opacity-0 transition-all duration-200 group-hover/item:opacity-100">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditSheet("education", idx)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteEducation(idx)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Code className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Skills</h3>
-                {skills.length === 0 && (
-                  <Badge variant="outline" className="border-amber-500 text-amber-600">
-                    Empty
-                  </Badge>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => openEditSheet("skills")}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </div>
-            {skills.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                <AlertCircle className="h-8 w-8 text-amber-600" />
-                <p className="mt-2 text-sm font-medium text-amber-600">No skills added</p>
-                <Button variant="outline" size="sm" onClick={() => openEditSheet("skills")} className="mt-4">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Add Your Skills
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="px-3 py-1.5 transition-all hover:scale-105 hover:shadow-md cursor-default">
-                    {skill.name}
-                    {skill.level && ` • ${skill.level}`}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Projects</h3>
-                {projects.length === 0 && (
-                  <Badge variant="outline" className="border-amber-500 text-amber-600">
-                    Empty
-                  </Badge>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addProject}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Add
-              </Button>
-            </div>
-            {projects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                <AlertCircle className="h-8 w-8 text-amber-600" />
-                <p className="mt-2 text-sm font-medium text-amber-600">No projects added</p>
-                <Button variant="outline" size="sm" onClick={addProject} className="mt-4">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Add Your First Project
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {projects.map((project, idx) => (
-                  <div key={idx} className="group/item rounded-xl border border-border/50 bg-gradient-to-br from-card to-muted/20 p-4 transition-all hover:shadow-md hover:border-primary/30">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-lg">{project.title}</h4>
-                      {project.role && (
-                        <p className="text-sm text-muted-foreground">{project.role}</p>
-                      )}
-                      {project.description && (
-                        <p className="mt-1 text-sm">{project.description}</p>
-                      )}
-                      {project.technologies && project.technologies.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {project.technologies.map((tech, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {tech}
+                      <div className="mt-4 flex gap-2">
+                        {basic_info.linkedin_url && (
+                          <a
+                            href={basic_info.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                            >
+                              <Linkedin className="mr-1 h-3 w-3" />
+                              LinkedIn
                             </Badge>
-                          ))}
-                        </div>
-                      )}
+                          </a>
+                        )}
+                        {basic_info.github_url && (
+                          <a
+                            href={basic_info.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                            >
+                              <Github className="mr-1 h-3 w-3" />
+                              GitHub
+                            </Badge>
+                          </a>
+                        )}
+                        {basic_info.portfolio_url && (
+                          <a
+                            href={basic_info.portfolio_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                            >
+                              <Globe className="mr-1 h-3 w-3" />
+                              Portfolio
+                            </Badge>
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditSheet("projects", idx)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteProject(idx)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEditSheet("basic")}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Award className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">Certifications</h3>
-                {certifications.length === 0 && (
-                  <Badge variant="outline" className="border-amber-500 text-amber-600">
-                    Empty
-                  </Badge>
-                )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addCertification}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Add
-              </Button>
-            </div>
-            {certifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                <AlertCircle className="h-8 w-8 text-amber-600" />
-                <p className="mt-2 text-sm font-medium text-amber-600">No certifications added</p>
-                <Button variant="outline" size="sm" onClick={addCertification} className="mt-4">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Add Your First Certification
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {certifications.map((cert, idx) => (
-                  <div key={idx} className="group/item rounded-xl border border-border/50 bg-gradient-to-br from-card to-muted/20 p-4 transition-all hover:shadow-md hover:border-primary/30">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-lg">{cert.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {cert.issuer} • {cert.issue_date}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditSheet("certifications", idx)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteCertification(idx)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+            </Card>
 
-          <div className="grid gap-4 md:grid-cols-2">
             <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
-                    <Languages className="h-5 w-5 text-primary" />
+                    <Briefcase className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">Languages</h3>
-                  {languages.length === 0 && (
-                    <Badge variant="outline" className="border-amber-500 text-amber-600">
+                  <h3 className="text-xl font-bold tracking-tight">
+                    Experience
+                  </h3>
+                  {work_experience.length === 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500/50 bg-amber-50 text-amber-700 dark:bg-amber-950/20 font-medium"
+                    >
                       Empty
                     </Badge>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => openEditSheet("languages")}
-                >
-                  <Pencil className="h-4 w-4" />
+                <Button variant="outline" size="sm" onClick={addExperience}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
                 </Button>
               </div>
-              {languages.length === 0 ? (
+              {work_experience.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
                   <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">No languages added</p>
-                  <Button variant="outline" size="sm" onClick={() => openEditSheet("languages")} className="mt-4">
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    No work experience added
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addExperience}
+                    className="mt-4"
+                  >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Language
+                    Add Your First Experience
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {languages.map((lang, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
-                      <span>{lang.language}</span>
-                      <span className="text-muted-foreground">{lang.proficiency}</span>
+                <div className="space-y-0">
+                  {[...work_experience]
+                    .sort((a, b) => {
+                      const parseDate = (dateStr: string | null) => {
+                        if (!dateStr) return new Date(0);
+                        if (dateStr === "Present") return new Date();
+                        const [month, year] = dateStr.split("/");
+                        return new Date(parseInt(year), parseInt(month) - 1);
+                      };
+                      const dateA = parseDate(a.start_date);
+                      const dateB = parseDate(b.start_date);
+                      return dateB.getTime() - dateA.getTime();
+                    })
+                    .map((exp, idx) => (
+                      <div
+                        key={idx}
+                        className="group/item relative border-l-2 border-primary/30 pl-8 pb-6 last:pb-0 transition-all hover:border-primary/60"
+                      >
+                        <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-primary bg-background shadow-lg shadow-primary/20 transition-all group-hover/item:scale-125 group-hover/item:shadow-primary/40" />
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-lg">{exp.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {exp.company} • {exp.location}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {exp.start_date} -{" "}
+                              {exp.currently_working ? "Present" : exp.end_date}
+                            </p>
+                            {exp.description && (
+                              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                {exp.description}
+                              </p>
+                            )}
+                            {exp.achievements &&
+                              exp.achievements.length > 0 && (
+                                <ul className="mt-2 space-y-1 text-sm">
+                                  {exp.achievements?.map(
+                                    (achievement: string, i: number) => (
+                                      <li key={i} className="flex gap-2">
+                                        <span className="text-primary">•</span>
+                                        <span>{achievement}</span>
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              )}
+                          </div>
+                          <div className="flex gap-1 opacity-0 transition-all duration-200 group-hover/item:opacity-100">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditSheet("experience", idx)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteExperience(idx)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight">
+                    Education
+                  </h3>
+                  {education.length === 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500 text-amber-600"
+                    >
+                      Empty
+                    </Badge>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={addEducation}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+              {education.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
+                  <AlertCircle className="h-8 w-8 text-amber-600" />
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    No education added
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addEducation}
+                    className="mt-4"
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Add Your First Education
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {education.map((edu: ResumeEducation, idx: number) => (
+                    <div
+                      key={idx}
+                      className="group/item relative border-l-2 border-primary/30 pl-8 pb-6 last:pb-0 transition-all hover:border-primary/60"
+                    >
+                      <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-primary bg-background shadow-lg shadow-primary/20 transition-all group-hover/item:scale-125 group-hover/item:shadow-primary/40" />
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg">{edu.degree}</h4>
+                          <p className="text-sm text-muted-foreground font-medium">
+                            {edu.institution} • {edu.field_of_study}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {edu.start_date} - {edu.end_date}
+                            {edu.grade && ` • ${edu.grade}`}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 opacity-0 transition-all duration-200 group-hover/item:opacity-100">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditSheet("education", idx)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteEducation(idx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2040,11 +2187,14 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
-                    <Heart className="h-5 w-5 text-primary" />
+                    <Code className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">Interests</h3>
-                  {interests.length === 0 && (
-                    <Badge variant="outline" className="border-amber-500 text-amber-600">
+                  <h3 className="text-xl font-bold tracking-tight">Skills</h3>
+                  {skills.length === 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500 text-amber-600"
+                    >
                       Empty
                     </Badge>
                   )}
@@ -2052,58 +2202,367 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => openEditSheet("interests")}
+                  onClick={() => openEditSheet("skills")}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
               </div>
-              {interests.length === 0 ? (
+              {skills.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
                   <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">No interests added</p>
-                  <Button variant="outline" size="sm" onClick={() => openEditSheet("interests")} className="mt-4">
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    No skills added
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditSheet("skills")}
+                    className="mt-4"
+                  >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Interest
+                    Add Your Skills
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {interests.map((interest, idx) => (
-                    <Badge key={idx} variant="outline">
-                      {interest}
+                  {skills.map((skill: ResumeSkill, idx: number) => (
+                    <Badge
+                      key={idx}
+                      variant="secondary"
+                      className="px-3 py-1.5 transition-all hover:scale-105 hover:shadow-md cursor-default"
+                    >
+                      {skill.name}
+                      {skill.level && ` • ${skill.level}`}
                     </Badge>
                   ))}
                 </div>
               )}
             </Card>
-          </div>
+
+            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight">Projects</h3>
+                  {projects.length === 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500 text-amber-600"
+                    >
+                      Empty
+                    </Badge>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={addProject}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+              {projects.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
+                  <AlertCircle className="h-8 w-8 text-amber-600" />
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    No projects added
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addProject}
+                    className="mt-4"
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Add Your First Project
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {projects.map((project: ResumeProject, idx: number) => (
+                    <div
+                      key={idx}
+                      className="group/item rounded-xl border border-border/50 bg-gradient-to-br from-card to-muted/20 p-4 transition-all hover:shadow-md hover:border-primary/30"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-bold text-lg">{project.title}</h4>
+                        {project.role && (
+                          <p className="text-sm text-muted-foreground">
+                            {project.role}
+                          </p>
+                        )}
+                        {project.description && (
+                          <p className="mt-1 text-sm">{project.description}</p>
+                        )}
+                        {project.technologies &&
+                          project.technologies.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {project.technologies?.map(
+                                (tech: string, i: number) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    {tech}
+                                  </Badge>
+                                )
+                              )}
+                            </div>
+                          )}
+                      </div>
+                      <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditSheet("projects", idx)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteProject(idx)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <Award className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight">
+                    Certifications
+                  </h3>
+                  {certifications.length === 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500 text-amber-600"
+                    >
+                      Empty
+                    </Badge>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={addCertification}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+              {certifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
+                  <AlertCircle className="h-8 w-8 text-amber-600" />
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    No certifications added
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addCertification}
+                    className="mt-4"
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Add Your First Certification
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {certifications.map(
+                    (cert: ResumeCertification, idx: number) => (
+                      <div
+                        key={idx}
+                        className="group/item rounded-xl border border-border/50 bg-gradient-to-br from-card to-muted/20 p-4 transition-all hover:shadow-md hover:border-primary/30"
+                      >
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg">{cert.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {cert.issuer} • {cert.issue_date}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditSheet("certifications", idx)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteCertification(idx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </Card>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <Languages className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight">
+                      Languages
+                    </h3>
+                    {languages.length === 0 && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500 text-amber-600"
+                      >
+                        Empty
+                      </Badge>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => openEditSheet("languages")}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+                {languages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
+                    <AlertCircle className="h-8 w-8 text-amber-600" />
+                    <p className="mt-2 text-sm font-medium text-amber-600">
+                      No languages added
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditSheet("languages")}
+                      className="mt-4"
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Add Your First Language
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {languages.map((lang: ResumeLanguage, idx: number) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>{lang.language}</span>
+                        <span className="text-muted-foreground">
+                          {lang.proficiency}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <Heart className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight">
+                      Interests
+                    </h3>
+                    {interests.length === 0 && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500 text-amber-600"
+                      >
+                        Empty
+                      </Badge>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => openEditSheet("interests")}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+                {interests.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
+                    <AlertCircle className="h-8 w-8 text-amber-600" />
+                    <p className="mt-2 text-sm font-medium text-amber-600">
+                      No interests added
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditSheet("interests")}
+                      className="mt-4"
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Add Your First Interest
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {interests.map((interest: ResumeInterest, idx: number) => (
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="px-3 py-1.5 transition-all hover:scale-105 hover:shadow-md cursor-default"
+                      >
+                        {interest.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
           </div>
 
           <div className="space-y-6">
             <Card className="p-6 sticky top-20 border-0 shadow-xl bg-gradient-to-br from-card to-card/50 backdrop-blur-sm">
               <div className="mb-4 flex items-center gap-2">
                 <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-primary/50" />
-                <h3 className="text-xl font-bold tracking-tight">Profile Status</h3>
+                <h3 className="text-xl font-bold tracking-tight">
+                  Profile Status
+                </h3>
               </div>
               <div className="space-y-4">
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium">Completion</span>
-                    <span className="text-sm font-bold text-primary">{completionPercentage}%</span>
+                    <span className="text-sm font-bold text-primary">
+                      {completionPercentage}%
+                    </span>
                   </div>
-                  <Progress value={completionPercentage} className="h-3 bg-muted/50" />
+                  <Progress
+                    value={completionPercentage}
+                    className="h-3 bg-muted/50"
+                  />
                   {completionPercentage < 100 ? (
                     <div className="mt-3 space-y-2">
                       <div className="flex items-center gap-2 text-sm text-amber-600 font-medium">
                         <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <span className="font-medium">Complete your profile</span>
+                        <span className="font-medium">
+                          Complete your profile
+                        </span>
                       </div>
                       {missingItems.length > 0 && (
                         <div className="ml-6 space-y-1">
-                          <p className="text-xs text-muted-foreground font-medium">Pending:</p>
+                          <p className="text-xs text-muted-foreground font-medium">
+                            Pending:
+                          </p>
                           <ul className="space-y-1">
                             {missingItems.map((item, idx) => (
-                              <li key={idx} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                              <li
+                                key={idx}
+                                className="text-xs text-muted-foreground flex items-center gap-1.5"
+                              >
                                 <span className="h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
                                 <span>{item}</span>
                               </li>
@@ -2123,17 +2582,23 @@ export function ResumeProfileComplete({ apiUrl, onComplete }: ResumeProfileProps
                 <div className="space-y-3">
                   {resumeFilename && (
                     <div className="text-sm">
-                      <p className="text-muted-foreground mb-1">Current Resume:</p>
+                      <p className="text-muted-foreground mb-1">
+                        Current Resume:
+                      </p>
                       <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
                         <FileText className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="truncate font-medium">{resumeFilename}</span>
+                        <span className="truncate font-medium">
+                          {resumeFilename}
+                        </span>
                       </div>
                     </div>
                   )}
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => document.getElementById("resume-reupload-direct")?.click()}
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() =>
+                      document.getElementById("resume-reupload-direct")?.click()
+                    }
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Re-upload Resume
