@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
 import { Badge } from "@/components/ui/badge";
@@ -15,18 +16,21 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
         {/* Logo / brand */}
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm">
-            <span className="text-lg font-semibold">DM</span>
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              Talentflow
-            </span>
-            <span className="text-xs text-muted-foreground">
-              AI tech interview practice
-            </span>
-          </div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo-light.png"
+            alt="Talentflow logo"
+            width={120}
+            height={30}
+            className="block h-[30px] w-auto dark:hidden"
+          />
+          <Image
+            src="/logo-light.png"
+            alt="Talentflow logo"
+            width={120}
+            height={30}
+            className="hidden h-[30px] w-auto dark:block"
+          />
         </Link>
 
         {/* Primary nav + beta badge */}
