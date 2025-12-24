@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Get authentication headers for API requests
