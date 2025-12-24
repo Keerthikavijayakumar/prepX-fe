@@ -119,9 +119,8 @@ export function ResumeProfileComplete({
         return;
       }
 
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+      
       // Fetch profile data (parsed resume data from users table)
       const profileResponse = await fetch(`${baseUrl}/api/profile`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -188,8 +187,7 @@ export function ResumeProfileComplete({
       const formData = new FormData();
       formData.append("file", file);
 
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/resume`, {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -370,8 +368,7 @@ export function ResumeProfileComplete({
         return;
       }
 
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -530,9 +527,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -604,9 +600,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -669,9 +664,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -741,9 +735,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -813,9 +806,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -878,9 +870,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
@@ -947,9 +938,8 @@ export function ResumeProfileComplete({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) return;
-
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${baseUrl}/api/profile`, {
         method: "PUT",
         headers: {
