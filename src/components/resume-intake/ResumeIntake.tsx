@@ -373,8 +373,7 @@ export function ResumeIntake({
       const formData = new FormData();
       formData.append("file", file);
 
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
       const response = await fetch(`${baseUrl}/api/resume`, {
         method: "POST",
@@ -738,8 +737,7 @@ export function ResumeIntake({
         return;
       }
 
-      const baseUrl =
-        apiUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
       const response = await fetch(`${baseUrl}/api/resume/parsed`, {
         method: "PUT",
