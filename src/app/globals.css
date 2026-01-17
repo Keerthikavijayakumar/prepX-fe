@@ -208,6 +208,19 @@
 }
 
 @layer utilities {
+  /* CSS Containment for better CLS - prevents layout shifts */
+  .contain-layout {
+    contain: layout style;
+  }
+  
+  .contain-paint {
+    contain: paint;
+  }
+  
+  .contain-content {
+    contain: content;
+  }
+
   @keyframes ripple {
     0% {
       transform: scale(1);

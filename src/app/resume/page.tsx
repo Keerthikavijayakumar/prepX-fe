@@ -11,9 +11,9 @@ const ResumeProfile = dynamic(
     loading: () => (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p className="mt-4 text-sm text-muted-foreground">
-            Loading profile...
+            Loading your profile...
           </p>
         </div>
       </div>
@@ -26,11 +26,13 @@ export default function ResumeWorkspacePage() {
 
   return (
     <ProtectedRoute>
-      <ResumeProfile
-        onComplete={() => {
-          router.push("/dashboard");
-        }}
-      />
+      <div className="min-h-screen">
+        <ResumeProfile
+          onComplete={() => {
+            router.push("/dashboard");
+          }}
+        />
+      </div>
     </ProtectedRoute>
   );
 }

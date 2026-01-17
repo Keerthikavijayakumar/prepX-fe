@@ -1,0 +1,15 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    PANELROOM Brand Mark - Final Design
+    
+    A minimalist "dialogue portal" - represents the interview room
+    Two rounded rectangles suggest conversation flow
+    Clean geometry, works at any size
+  -->
+  
+  <!-- Primary shape -->
+  <rect x="4" y="6" width="26" height="36" rx="8" fill="#005A8B"/>
+  
+  <!-- Secondary overlapping shape - creates depth -->
+  <rect x="18" y="6" width="26" height="36" rx="8" fill="#00D4AA"/>
+</svg>

@@ -1,0 +1,8 @@
+# Modern browsers only - eliminates legacy JavaScript polyfills
+# These browsers natively support: Array.at, flat, flatMap, Object.fromEntries, hasOwn, String.trim*
+
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Safari versions
+last 2 Edge versions
+not dead

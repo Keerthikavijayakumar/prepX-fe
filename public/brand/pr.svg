@@ -1,0 +1,17 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    PANELROOM — THE Brand Mark
+    
+    A single bold "P" letterform.
+    The counter (hole) is a perfect circle - representing 
+    dialogue, AI, and the interview "room".
+    
+    Inspired by: Beats, Pinterest, PayPal
+    Simple. Bold. Enterprise.
+  -->
+  <path 
+    fill-rule="evenodd"
+    d="M4 0C1.79086 0 0 1.79086 0 4V28C0 30.2091 1.79086 32 4 32H12V20H8V12H20C24.4183 12 28 8.41828 28 4V4C28 1.79086 26.2091 0 24 0H4ZM20 8H12V4H20C21.1046 4 22 4.89543 22 6C22 7.10457 21.1046 8 20 8Z"
+    fill="#005A8B"
+  />
+</svg>

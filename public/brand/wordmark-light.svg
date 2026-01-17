@@ -1,0 +1,13 @@
+<svg width="180" height="48" viewBox="0 0 180 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- PANELROOM Full Logo - For Light Backgrounds -->
+  
+  <!-- Icon -->
+  <rect x="4" y="4" width="40" height="40" rx="10" fill="#005A8B"/>
+  <rect x="12" y="12" width="16" height="16" rx="4" fill="white"/>
+  <circle cx="36" cy="12" r="5" fill="#00D4AA"/>
+  
+  <!-- Wordmark -->
+  <text x="56" y="32" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#005A8B">panel</tspan><tspan fill="#1a1a2e">room</tspan>
+  </text>
+</svg>

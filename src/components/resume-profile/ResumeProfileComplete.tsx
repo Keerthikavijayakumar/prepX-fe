@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, useCallback, useMemo, ChangeEvent } from "react";
 import {
   Pencil,
   Upload,
@@ -161,7 +161,20 @@ export function ResumeProfileComplete({
     setParsedData(createEmptyResume());
   };
 
-  const handleFileSelection = async (file: File) => {
+  const handleFileSelection = useCallback(async (file: File) => {
+    // Security: Validate file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const allowedExtensions = ['.pdf', '.docx'];
+    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+      setError("Please upload a PDF or DOCX file only.");
+      return;
+    }
+
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setError(
         `File size exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(
@@ -223,19 +236,19 @@ export function ResumeProfileComplete({
       setUploading(false);
       setParsing(false);
     }
-  };
+  }, []);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) handleFileSelection(file);
-  };
+  }, [handleFileSelection]);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) handleFileSelection(file);
-  };
+  }, [handleFileSelection]);
 
   const checkMandatoryFieldsFilled = (): boolean => {
     if (!tempData) return false;
@@ -970,19 +983,30 @@ export function ResumeProfileComplete({
   const renderEditSheet = () => {
     if (!editingSection || !tempData) return null;
 
+    const sectionTitles: Record<string, string> = {
+      basic: "Basic Information",
+      experience: "Work Experience",
+      education: "Education",
+      skills: "Skills",
+      projects: "Projects",
+      certifications: "Certifications",
+      languages: "Languages",
+      interests: "Interests",
+    };
+
     return (
       <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
-        <SheetContent className="w-full sm:max-w-2xl flex flex-col">
-          <SheetHeader className="sticky top-0 z-10 bg-background pb-4 border-b">
-            <SheetTitle className="capitalize">
-              Edit {editingSection}
+        <SheetContent className="w-full sm:max-w-xl flex flex-col overflow-hidden">
+          <SheetHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-border/50">
+            <SheetTitle className="text-lg font-semibold">
+              {sectionTitles[editingSection] || `Edit ${editingSection}`}
             </SheetTitle>
-            <SheetDescription>
-              Make changes to your {editingSection} information
+            <SheetDescription className="text-sm text-muted-foreground">
+              Update your {editingSection} details below
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto mt-6 space-y-6 px-4 pb-24">
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
             {editingSection === "basic" && (
               <div className="space-y-5">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1680,15 +1704,20 @@ export function ResumeProfileComplete({
                 </div>
               </div>
             )}
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={closeEditSheet}>
-                Close
+          </div>
+
+          {/* Fixed footer */}
+          <div className="flex-shrink-0 px-6 py-4 border-t border-border/50 bg-background">
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={closeEditSheet} size="sm">
+                Cancel
               </Button>
               <Button
                 onClick={saveSheetData}
                 disabled={
                   saving || !hasUnsavedChanges || !checkMandatoryFieldsFilled()
                 }
+                size="sm"
               >
                 {saving ? (
                   <>
@@ -1696,7 +1725,7 @@ export function ResumeProfileComplete({
                     Saving...
                   </>
                 ) : (
-                  "Save"
+                  "Save Changes"
                 )}
               </Button>
             </div>
@@ -1721,39 +1750,70 @@ export function ResumeProfileComplete({
 
   if (!parsedData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Build Your Profile
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pt-4 pb-12">
+        <div className="mx-auto max-w-3xl px-6">
+          {/* Header with back navigation */}
+          <div className="mb-8">
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              aria-label="Go back to dashboard"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Let's Build Your Profile
             </h1>
-            <p className="mt-2 text-muted-foreground">
-              Get started by uploading your resume or entering your details
-              manually
+            <p className="mt-2 text-muted-foreground max-w-lg">
+              A complete profile helps our AI create personalized interview questions tailored to your experience.
             </p>
           </div>
 
-          <Card className="overflow-hidden">
+          {/* Quick tips for new users */}
+          <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/10">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Quick Tip</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Upload your resume for instant AI parsing, or start fresh with manual entry. You can always edit later.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Card className="overflow-hidden border-border/60">
             {parsing ? (
-              <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 p-12">
+              <div className="flex min-h-[300px] flex-col items-center justify-center gap-5 p-10">
                 <div className="relative">
-                  <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                  <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 </div>
                 <div className="text-center">
                   <h3 className="text-lg font-semibold">
-                    Parsing your resume...
+                    Analyzing your resume...
                   </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Our AI is extracting and structuring your information
+                    This usually takes 5-10 seconds
                   </p>
+                </div>
+                <div className="w-48">
+                  <Progress value={66} className="h-1.5" />
                 </div>
               </div>
             ) : (
-              <div className="p-8">
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div
-                    className={`group cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-all ${
+              <div className="p-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Upload Resume Option - Recommended */}
+                  <button
+                    type="button"
+                    className={`group relative cursor-pointer rounded-xl border-2 p-6 text-left transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                       isDragging
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/50 hover:bg-muted/30"
@@ -1770,20 +1830,27 @@ export function ResumeProfileComplete({
                       setIsDragging(false);
                     }}
                     onDrop={handleDrop}
+                    aria-label="Upload your resume file"
                   >
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                        <Upload className="h-8 w-8 text-primary" />
+                    {/* Recommended badge */}
+                    <div className="absolute -top-2.5 left-4">
+                      <Badge className="bg-emerald-500 text-white text-[10px] px-2 py-0.5">
+                        Recommended
+                      </Badge>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg bg-primary/10 p-3 transition-transform group-hover:scale-105">
+                        <Upload className="h-6 w-6 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold">Upload Resume</h3>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">Upload Resume</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          AI will parse your resume automatically
+                          AI extracts your info instantly
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground/70">
+                          PDF or DOCX • Max 5MB
                         </p>
                       </div>
-                      <Badge variant="outline" className="mt-2">
-                        PDF or DOCX • Max 5MB
-                      </Badge>
                     </div>
                     <input
                       id="resume-upload"
@@ -1792,25 +1859,32 @@ export function ResumeProfileComplete({
                       onChange={handleFileChange}
                       className="hidden"
                       disabled={uploading}
+                      aria-hidden="true"
                     />
-                  </div>
+                  </button>
 
-                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-8 text-center transition-all hover:border-primary/50 hover:bg-muted/30">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="rounded-full bg-primary/10 p-4">
-                        <Pencil className="h-8 w-8 text-primary" />
+                  {/* Manual Entry Option */}
+                  <button
+                    type="button"
+                    className="group rounded-xl border-2 border-border p-6 text-left transition-all hover:border-primary/50 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    onClick={startManualEntry}
+                    aria-label="Enter your details manually"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg bg-secondary p-3 transition-transform group-hover:scale-105">
+                        <Pencil className="h-6 w-6 text-secondary-foreground" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold">Manual Entry</h3>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">Start Fresh</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          Fill in your details section by section
+                          Enter details step by step
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground/70">
+                          Great if you don't have a resume
                         </p>
                       </div>
-                      <Button onClick={startManualEntry} className="mt-2">
-                        Start Building
-                      </Button>
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
             )}
@@ -1837,7 +1911,7 @@ export function ResumeProfileComplete({
   } = parsedData;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-background via-primary/5 to-background py-8">
+    <div className="relative min-h-screen bg-gradient-to-br from-background via-primary/5 to-background pt-4 pb-12">
       {parsing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <Card className="p-12">
@@ -1860,6 +1934,42 @@ export function ResumeProfileComplete({
       )}
 
       <div className="mx-auto max-w-7xl px-6">
+        {/* Header with back navigation and progress */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+            <h1 className="text-2xl font-bold tracking-tight">Your Profile</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Keep your profile updated for better interview personalization
+            </p>
+          </div>
+          
+          {/* Completion indicator */}
+          <div className="flex items-center gap-3 bg-card/80 border border-border/60 rounded-lg px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              {completionPercentage === 100 ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              ) : (
+                <div className="h-5 w-5 rounded-full border-2 border-primary flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-primary">{completionPercentage}</span>
+                </div>
+              )}
+              <span className="text-sm font-medium">
+                {completionPercentage === 100 ? "Profile Complete" : `${completionPercentage}% Complete`}
+              </span>
+            </div>
+            <Progress value={completionPercentage} className="w-24 h-2" />
+          </div>
+        </div>
+
         {error && (
           <Card className="mb-6 border-destructive bg-destructive/10 p-4">
             <p className="text-sm text-destructive">{error}</p>
@@ -1889,105 +1999,103 @@ export function ResumeProfileComplete({
                           {basic_info.summary}
                         </p>
                       )}
-                      <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      {/* Contact info - compact row */}
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                         {basic_info.location?.city && (
-                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                            <MapPin className="h-4 w-4" />
-                            {basic_info.location.city},{" "}
-                            {basic_info.location.country}
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {basic_info.location.city}{basic_info.location.country ? `, ${basic_info.location.country}` : ""}
                           </span>
                         )}
-                        {basic_info.linkedin_url && (
-                          <a
-                            href={basic_info.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted"
-                          >
-                            <Linkedin className="h-4 w-4" />
-                            LinkedIn
-                          </a>
-                        )}
                         {basic_info.email && (
-                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                            <Mail className="h-4 w-4" />
+                          <span className="flex items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5" />
                             {basic_info.email}
                           </span>
                         )}
                         {basic_info.phone && (
-                          <span className="flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted">
-                            <Phone className="h-4 w-4" />
+                          <span className="flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5" />
                             {basic_info.phone}
                           </span>
                         )}
                       </div>
-                      <div className="mt-4 flex gap-2">
-                        {basic_info.linkedin_url && (
-                          <a
-                            href={basic_info.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Badge
-                              variant="outline"
-                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                      {/* Social links - only show if any exist */}
+                      {(basic_info.linkedin_url || basic_info.github_url || basic_info.portfolio_url) && (
+                        <div className="mt-3 flex gap-2">
+                          {basic_info.linkedin_url && (
+                            <a
+                              href={basic_info.linkedin_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="View LinkedIn profile"
                             >
-                              <Linkedin className="mr-1 h-3 w-3" />
-                              LinkedIn
-                            </Badge>
-                          </a>
-                        )}
-                        {basic_info.github_url && (
-                          <a
-                            href={basic_info.github_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Badge
-                              variant="outline"
-                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                              <Badge
+                                variant="outline"
+                                className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105"
+                              >
+                                <Linkedin className="mr-1 h-3 w-3" />
+                                LinkedIn
+                              </Badge>
+                            </a>
+                          )}
+                          {basic_info.github_url && (
+                            <a
+                              href={basic_info.github_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="View GitHub profile"
                             >
-                              <Github className="mr-1 h-3 w-3" />
-                              GitHub
-                            </Badge>
-                          </a>
-                        )}
-                        {basic_info.portfolio_url && (
-                          <a
-                            href={basic_info.portfolio_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Badge
-                              variant="outline"
-                              className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105 hover:shadow-md"
+                              <Badge
+                                variant="outline"
+                                className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105"
+                              >
+                                <Github className="mr-1 h-3 w-3" />
+                                GitHub
+                              </Badge>
+                            </a>
+                          )}
+                          {basic_info.portfolio_url && (
+                            <a
+                              href={basic_info.portfolio_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="View portfolio website"
                             >
-                              <Globe className="mr-1 h-3 w-3" />
-                              Portfolio
-                            </Badge>
-                          </a>
-                        )}
-                      </div>
+                              <Badge
+                                variant="outline"
+                                className="cursor-pointer transition-all hover:bg-primary/10 hover:scale-105"
+                              >
+                                <Globe className="mr-1 h-3 w-3" />
+                                Portfolio
+                              </Badge>
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant="outline"
+                      size="sm"
                       onClick={() => openEditSheet("basic")}
+                      className="flex-shrink-0"
+                      aria-label="Edit basic information"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
                     </Button>
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Briefcase className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">
+                  <h3 className="text-lg font-semibold">
                     Experience
                   </h3>
                   {work_experience.length === 0 && (
@@ -2005,19 +2113,19 @@ export function ResumeProfileComplete({
                 </Button>
               </div>
               {work_experience.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                  <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">
-                    No work experience added
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                  <Briefcase className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add your work history to personalize interviews
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={addExperience}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Experience
+                    Add Experience
                   </Button>
                 </div>
               ) : (
@@ -2092,13 +2200,13 @@ export function ResumeProfileComplete({
               )}
             </Card>
 
-            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <GraduationCap className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">
+                  <h3 className="text-lg font-semibold">
                     Education
                   </h3>
                   {education.length === 0 && (
@@ -2116,19 +2224,19 @@ export function ResumeProfileComplete({
                 </Button>
               </div>
               {education.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                  <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">
-                    No education added
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                  <GraduationCap className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add your educational background
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={addEducation}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Education
+                    Add Education
                   </Button>
                 </div>
               ) : (
@@ -2173,13 +2281,13 @@ export function ResumeProfileComplete({
               )}
             </Card>
 
-            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Code className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">Skills</h3>
+                  <h3 className="text-lg font-semibold">Skills</h3>
                   {skills.length === 0 && (
                     <Badge
                       variant="outline"
@@ -2198,19 +2306,19 @@ export function ResumeProfileComplete({
                 </Button>
               </div>
               {skills.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                  <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">
-                    No skills added
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                  <Code className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add your technical and soft skills
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openEditSheet("skills")}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your Skills
+                    Add Skills
                   </Button>
                 </div>
               ) : (
@@ -2219,7 +2327,7 @@ export function ResumeProfileComplete({
                     <Badge
                       key={idx}
                       variant="secondary"
-                      className="px-3 py-1.5 transition-all hover:scale-105 hover:shadow-md cursor-default"
+                      className="px-3 py-1.5"
                     >
                       {skill.name}
                       {skill.level && ` • ${skill.level}`}
@@ -2229,13 +2337,13 @@ export function ResumeProfileComplete({
               )}
             </Card>
 
-            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">Projects</h3>
+                  <h3 className="text-lg font-semibold">Projects</h3>
                   {projects.length === 0 && (
                     <Badge
                       variant="outline"
@@ -2251,19 +2359,19 @@ export function ResumeProfileComplete({
                 </Button>
               </div>
               {projects.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                  <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">
-                    No projects added
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                  <FileText className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Showcase your best projects
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={addProject}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Project
+                    Add Project
                   </Button>
                 </div>
               ) : (
@@ -2322,13 +2430,13 @@ export function ResumeProfileComplete({
               )}
             </Card>
 
-            <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Award className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight">
+                  <h3 className="text-lg font-semibold">
                     Certifications
                   </h3>
                   {certifications.length === 0 && (
@@ -2346,19 +2454,19 @@ export function ResumeProfileComplete({
                 </Button>
               </div>
               {certifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                  <AlertCircle className="h-8 w-8 text-amber-600" />
-                  <p className="mt-2 text-sm font-medium text-amber-600">
-                    No certifications added
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                  <Award className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add your certifications and credentials
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={addCertification}
-                    className="mt-4"
+                    className="mt-3"
                   >
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Your First Certification
+                    Add Certification
                   </Button>
                 </div>
               ) : (
@@ -2399,13 +2507,13 @@ export function ResumeProfileComplete({
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+              <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg bg-primary/10 p-2">
                       <Languages className="h-5 w-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold tracking-tight">
+                    <h3 className="text-lg font-semibold">
                       Languages
                     </h3>
                     {languages.length === 0 && (
@@ -2426,42 +2534,39 @@ export function ResumeProfileComplete({
                   </Button>
                 </div>
                 {languages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                    <AlertCircle className="h-8 w-8 text-amber-600" />
-                    <p className="mt-2 text-sm font-medium text-amber-600">
-                      No languages added
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No languages added yet
                     </p>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => openEditSheet("languages")}
-                      className="mt-4"
+                      className="mt-2"
                     >
                       <Plus className="mr-1 h-4 w-4" />
-                      Add Your First Language
+                      Add Language
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
                     {languages.map((lang: ResumeLanguage, idx: number) => (
-                      <div key={idx} className="flex justify-between text-sm">
-                        <span>{lang.language}</span>
-                        <span className="text-muted-foreground">
-                          {lang.proficiency}
-                        </span>
-                      </div>
+                      <Badge key={idx} variant="secondary" className="px-3 py-1.5">
+                        {lang.name || lang.language}
+                        {lang.proficiency && <span className="ml-1 text-muted-foreground">• {lang.proficiency}</span>}
+                      </Badge>
                     ))}
                   </div>
                 )}
               </Card>
 
-              <Card className="group p-6 border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+              <Card className="p-6 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg bg-primary/10 p-2">
                       <Heart className="h-5 w-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold tracking-tight">
+                    <h3 className="text-lg font-semibold">
                       Interests
                     </h3>
                     {interests.length === 0 && (
@@ -2482,19 +2587,18 @@ export function ResumeProfileComplete({
                   </Button>
                 </div>
                 {interests.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-500/50 bg-amber-50/50 p-8 text-center dark:bg-amber-950/20">
-                    <AlertCircle className="h-8 w-8 text-amber-600" />
-                    <p className="mt-2 text-sm font-medium text-amber-600">
-                      No interests added
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No interests added yet
                     </p>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => openEditSheet("interests")}
-                      className="mt-4"
+                      className="mt-2"
                     >
                       <Plus className="mr-1 h-4 w-4" />
-                      Add Your First Interest
+                      Add Interest
                     </Button>
                   </div>
                 ) : (
@@ -2503,7 +2607,7 @@ export function ResumeProfileComplete({
                       <Badge
                         key={idx}
                         variant="secondary"
-                        className="px-3 py-1.5 transition-all hover:scale-105 hover:shadow-md cursor-default"
+                        className="px-3 py-1.5"
                       >
                         {interest.name}
                       </Badge>
@@ -2514,96 +2618,98 @@ export function ResumeProfileComplete({
             </div>
           </div>
 
-          <div className="space-y-6">
-            <Card className="p-6 sticky top-20 border-0 shadow-xl bg-gradient-to-br from-card to-card/50 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-primary/50" />
-                <h3 className="text-xl font-bold tracking-tight">
-                  Profile Status
+          {/* Sidebar - sticky container */}
+          <div className="relative">
+            <div className="sticky top-20 space-y-4">
+              {/* Quick Actions Card */}
+              <Card className="p-5 border-border/50 bg-card shadow-sm">
+                <h3 className="text-sm font-medium text-foreground mb-4">
+                  Quick Actions
                 </h3>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium">Completion</span>
-                    <span className="text-sm font-bold text-primary">
-                      {completionPercentage}%
-                    </span>
-                  </div>
-                  <Progress
-                    value={completionPercentage}
-                    className="h-3 bg-muted/50"
-                  />
-                  {completionPercentage < 100 ? (
-                    <div className="mt-3 space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-amber-600 font-medium">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <span className="font-medium">
-                          Complete your profile
-                        </span>
-                      </div>
-                      {missingItems.length > 0 && (
-                        <div className="ml-6 space-y-1">
-                          <p className="text-xs text-muted-foreground font-medium">
-                            Pending:
-                          </p>
-                          <ul className="space-y-1">
-                            {missingItems.map((item, idx) => (
-                              <li
-                                key={idx}
-                                className="text-xs text-muted-foreground flex items-center gap-1.5"
-                              >
-                                <span className="h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Profile complete!</span>
-                    </div>
-                  )}
-                </div>
-                <Separator />
+                
                 <div className="space-y-3">
-                  {resumeFilename && (
-                    <div className="text-sm">
-                      <p className="text-muted-foreground mb-1">
-                        Current Resume:
+                  {/* Resume upload */}
+                  <div className="p-3 rounded-lg bg-muted/40">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {resumeFilename || "No resume"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {resumeFilename ? "Click to replace" : "Upload to auto-fill"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-3"
+                      onClick={() =>
+                        document.getElementById("resume-reupload-direct")?.click()
+                      }
+                      disabled={uploading}
+                    >
+                      <Upload className="mr-1.5 h-3.5 w-3.5" />
+                      {resumeFilename ? "Replace" : "Upload Resume"}
+                    </Button>
+                    <input
+                      id="resume-reupload-direct"
+                      type="file"
+                      accept=".pdf,.docx"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      disabled={uploading}
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  {/* Missing items - only show if incomplete */}
+                  {completionPercentage < 100 && missingItems.length > 0 && (
+                    <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
+                      <p className="text-xs font-medium text-amber-800 dark:text-amber-300 mb-2">
+                        To complete your profile:
                       </p>
-                      <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                        <FileText className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="truncate font-medium">
-                          {resumeFilename}
-                        </span>
+                      <ul className="space-y-1">
+                        {missingItems.slice(0, 4).map((item, idx) => (
+                          <li
+                            key={idx}
+                            className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2"
+                          >
+                            <span className="h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                        {missingItems.length > 4 && (
+                          <li className="text-xs text-amber-600 dark:text-amber-500 pl-3">
+                            +{missingItems.length - 4} more
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Success state */}
+                  {completionPercentage === 100 && (
+                    <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                          Profile complete!
+                        </p>
                       </div>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() =>
-                      document.getElementById("resume-reupload-direct")?.click()
-                    }
-                  >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Re-upload Resume
-                  </Button>
-                  <input
-                    id="resume-reupload-direct"
-                    type="file"
-                    accept=".pdf,.docx"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    disabled={uploading}
-                  />
+
+                  {/* Help text - inline instead of separate card */}
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                    Click <strong>Edit</strong> on any section to update. Changes save automatically.
+                  </p>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

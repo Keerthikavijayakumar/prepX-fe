@@ -1,114 +1,55 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, ArrowRight, LogOut, Settings } from "lucide-react";
 
-import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
-type NavbarUser = {
-  name: string | null;
-  email: string | null;
-};
+interface NavbarUserControlsProps {
+  currentPath?: string;
+  compact?: boolean;
+}
 
-export function NavbarUserControls() {
-  const [authLoading, setAuthLoading] = useState(true);
-  const [ctaLoading, setCtaLoading] = useState(false);
-  const [user, setUser] = useState<NavbarUser | null>(null);
+function NavbarUserControlsComponent({ currentPath = "/", compact = false }: NavbarUserControlsProps) {
+  const { user, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function syncUserFromAuth() {
-      const { data, error } = await supabase.auth.getUser();
-      if (!isMounted) return;
-
-      if (error || !data.user) {
-        setUser(null);
-        setAuthLoading(false);
-        return;
-      }
-
-      const rawUser: any = data.user;
-      const meta = rawUser.user_metadata ?? {};
-      const name = (meta.display_name ?? meta.name ?? null) as string | null;
-      const email = (rawUser.email ?? null) as string | null;
-
-      setUser({ name, email });
-      setAuthLoading(false);
-    }
-
-    syncUserFromAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return;
-
-      const sessionUser: any | null = session?.user ?? null;
-      if (!sessionUser) {
-        setUser(null);
-        setAuthLoading(false);
-        return;
-      }
-
-      const meta = sessionUser.user_metadata ?? {};
-      const name = (meta.display_name ?? meta.name ?? null) as string | null;
-      const email = (sessionUser.email ?? null) as string | null;
-
-      setUser({ name, email });
-      setAuthLoading(false);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  async function handleStartInterview() {
-    if (ctaLoading) return;
-    setCtaLoading(true);
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        router.push("/dashboard");
-      } else {
-        router.push("/sign-in");
-      }
-    } finally {
-      setCtaLoading(false);
-    }
-  }
+  const isProfile = currentPath.startsWith("/profile");
 
   const themeButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={toggleTheme}
       aria-label="Toggle color theme"
-      className="h-8 w-8 rounded-full"
+      className="h-9 w-9 rounded-full hover:bg-accent transition-colors"
     >
       {theme === "dark" ? (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-4 w-4 transition-transform hover:rotate-45" />
       ) : (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-4 w-4 transition-transform hover:-rotate-12" />
       )}
     </Button>
   );
 
   if (authLoading) {
     return (
-      <div className="flex items-center gap-3">
-        <Button size="sm" disabled>
-          Loading...
-        </Button>
+      <div className="flex items-center gap-2">
+        <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
         {themeButton}
       </div>
     );
@@ -116,9 +57,21 @@ export function NavbarUserControls() {
 
   if (!user) {
     return (
-      <div className="flex items-center gap-3">
-        <Button size="sm" onClick={handleStartInterview} disabled={ctaLoading}>
-          Start practicing
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/sign-in")}
+        >
+          Sign In
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => router.push("/sign-in")}
+          className="group bg-foreground text-background hover:bg-foreground/90"
+        >
+          Get Started
+          <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
         {themeButton}
       </div>
@@ -130,19 +83,115 @@ export function NavbarUserControls() {
     user.email?.trim()?.charAt(0)?.toUpperCase() ??
     "?";
 
+  const displayName = user.name || user.email?.split("@")[0] || "User";
+
+  // Compact mode: just theme toggle and avatar dropdown
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        {themeButton}
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-all",
+                "bg-gradient-to-br from-primary/80 to-primary text-primary-foreground",
+                "hover:shadow-md hover:shadow-primary/25 hover:scale-105",
+                "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+              )}
+            >
+              {initial}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="px-3 py-2">
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-red-600 dark:text-red-400 cursor-pointer"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+
+  // Full mode (mobile menu, landing page)
   return (
     <div className="flex items-center gap-3">
-      <Button asChild size="sm" className="text-xs">
-        <Link href="/dashboard">Dashboard</Link>
-      </Button>
       {themeButton}
-      <Link
-        href="/profile"
-        aria-label="Profile"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground"
-      >
-        {initial}
-      </Link>
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={cn(
+              "flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-all",
+              "bg-secondary/80 hover:bg-secondary",
+              "focus:outline-none focus:ring-2 focus:ring-primary/50"
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                "bg-gradient-to-br from-primary/80 to-primary text-primary-foreground"
+              )}
+            >
+              {initial}
+            </span>
+            <span className="text-sm font-medium text-foreground max-w-[100px] truncate">
+              {displayName}
+            </span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <div className="px-3 py-2">
+            <p className="text-sm font-medium">{displayName}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard" className="cursor-pointer">
+              Dashboard
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/history" className="cursor-pointer">
+              Interview History
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile" className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => signOut()}
+            className="text-red-600 dark:text-red-400 cursor-pointer"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const NavbarUserControls = memo(NavbarUserControlsComponent);

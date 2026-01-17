@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    PANELROOM - THE Brand Symbol
+    
+    Inspired by: Mastercard overlapping circles, Beats simplicity
+    Two overlapping rounded squares = two parties in conversation
+    The overlap = the "room" where interview magic happens
+    
+    Colors: Brand blue + vibrant teal accent
+  -->
+  
+  <!-- Left panel - the AI/interviewer -->
+  <rect x="2" y="8" width="28" height="32" rx="8" fill="#005A8B"/>
+  
+  <!-- Right panel - the candidate (overlapping) -->
+  <rect x="18" y="8" width="28" height="32" rx="8" fill="#005A8B" fill-opacity="0.6"/>
+  
+  <!-- Overlap highlight - the meeting point -->
+  <rect x="18" y="8" width="12" height="32" rx="0" fill="#00D4AA"/>
+</svg>

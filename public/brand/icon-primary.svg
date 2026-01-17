@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    Panelroom Brand Icon
+    Concept: Abstract "conversation portal" - two overlapping rounded squares
+    creating a unified "room" where dialogue happens.
+    The negative space forms a subtle "P" shape.
+  -->
+  
+  <!-- Outer shape - the room/frame -->
+  <rect x="8" y="8" width="48" height="48" rx="12" fill="#005A8B"/>
+  
+  <!-- Inner cutout - creates depth and the conversation space -->
+  <rect x="20" y="16" width="28" height="32" rx="8" fill="white"/>
+  
+  <!-- Accent dot - the AI presence, positioned like a cursor/active indicator -->
+  <circle cx="46" cy="18" r="6" fill="#00C2A8"/>
+</svg>

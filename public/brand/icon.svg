@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    Panelroom Brand Mark
+    A stylized "P" that forms a speech bubble / portal
+    Simple, bold, iconic - works at any size
+  -->
+  <path 
+    d="M16 8C11.5817 8 8 11.5817 8 16V48C8 52.4183 11.5817 56 16 56H24V44H20C17.7909 44 16 42.2091 16 40V24C16 21.7909 17.7909 20 20 20H40C42.2091 20 44 21.7909 44 24V32H56V16C56 11.5817 52.4183 8 48 8H16Z" 
+    fill="#005A8B"
+  />
+  <circle cx="50" cy="44" r="10" fill="#00D9B5"/>
+</svg>

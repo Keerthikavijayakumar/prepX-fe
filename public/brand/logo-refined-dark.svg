@@ -1,0 +1,26 @@
+<svg width="172" height="44" viewBox="0 0 172 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    PANELROOM — Refined Wordmark (Dark BG)
+  -->
+  
+  <!-- Icon -->
+  <rect x="4" y="4" width="36" height="36" rx="9" fill="#E2E8F0"/>
+  <path 
+    d="M14 24L22 15L30 24" 
+    stroke="#0F172A" 
+    stroke-width="4" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+  />
+  
+  <!-- Wordmark -->
+  <text 
+    x="52" 
+    y="29" 
+    font-family="system-ui, -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif" 
+    font-size="22" 
+    font-weight="600" 
+    fill="#F1F5F9" 
+    letter-spacing="-0.03em"
+  >panelroom</text>
+</svg>

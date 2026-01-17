@@ -1,16 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useInView,
-  useMotionValue,
-  useSpring,
-  AnimatePresence,
-} from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,97 +14,195 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  Check,
+  Code2,
+  BarChart3,
+  Users,
+  Shield,
+  Target,
+  Sparkles,
+  Play,
+  Upload,
+  MessageSquare,
+} from "lucide-react";
+import { HeroIllustration } from "@/components/shared/hero-illustration";
 
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: {
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
+
+// Pricing plans - Clear value proposition for each tier
+const pricingPlans = [
+  {
+    name: "Free",
+    description: "Explore Panelroom risk-free",
+    price: "$0",
+    priceNote: "forever",
+    highlighted: false,
+    features: [
+      "3 AI mock interviews/month",
+      "Behavioral & technical rounds",
+      "Basic performance feedback",
+      "Session transcripts",
+      "Email support",
+    ],
+    cta: "Get Started Free",
+    badge: null,
+  },
+  {
+    name: "Pro",
+    description: "Land your dream tech job faster",
+    price: "$19",
+    priceNote: "/month",
+    highlighted: true,
+    features: [
+      "Unlimited AI interviews",
+      "System design deep-dives",
+      "Advanced analytics dashboard",
+      "Job description targeting",
+      "Interview recordings",
+      "Priority support",
+    ],
+    cta: "Start 7-Day Free Trial",
+    badge: "Most Popular",
+  },
+  {
+    name: "Teams",
+    description: "Scale interview prep for your org",
+    price: "Custom",
+    priceNote: "pricing",
+    highlighted: false,
+    features: [
+      "Everything in Pro",
+      "Team analytics & benchmarks",
+      "Candidate assessment tools",
+      "Custom interview templates",
+      "SSO & admin controls",
+      "Dedicated success manager",
+    ],
+    cta: "Talk to Sales",
+    badge: "For Companies",
+  },
+];
+
+// Features data - Core value propositions
+const features = [
+  {
+    icon: Code2,
+    title: "Live Coding Interviews",
+    description:
+      "Solve real coding problems in a live environment. Get instant AI feedback on your approach, complexity analysis, and code quality.",
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+  },
+  {
+    icon: Users,
+    title: "System Design Practice",
+    description:
+      "Tackle architecture questions like you would at FAANG. Design distributed systems with guided prompts and expert-level evaluation.",
+    color: "text-purple-500",
+    bgColor: "bg-purple-500/10",
+  },
+  {
+    icon: MessageSquare,
+    title: "Behavioral Mastery",
+    description:
+      "Perfect your STAR responses with an AI that understands what hiring managers look for. Build confidence in storytelling.",
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/10",
+  },
+  {
+    icon: Target,
+    title: "Role-Specific Prep",
+    description:
+      "Paste any job description and Panelroom generates targeted questions matching the exact skills and experience required.",
+    color: "text-orange-500",
+    bgColor: "bg-orange-500/10",
+  },
+  {
+    icon: BarChart3,
+    title: "Performance Insights",
+    description:
+      "Track improvement over time with detailed analytics on technical accuracy, communication clarity, and problem-solving speed.",
+    color: "text-pink-500",
+    bgColor: "bg-pink-500/10",
+  },
+  {
+    icon: Shield,
+    title: "Resume Intelligence",
+    description:
+      "Our AI reads your resume to ask personalized questions about your projects, tech stack, and career trajectory.",
+    color: "text-cyan-500",
+    bgColor: "bg-cyan-500/10",
+  },
+];
+
+// How it works steps - Simple 3-step process
+const steps = [
+  {
+    step: "01",
+    icon: Upload,
+    title: "Upload Your Resume",
+    description:
+      "Panelroom's AI analyzes your experience, skills, and projects to create a personalized interview experience.",
+  },
+  {
+    step: "02",
+    icon: Play,
+    title: "Enter the Interview Room",
+    description:
+      "Join a realistic AI-powered interview with voice interaction, just like a real video call with a hiring manager.",
+  },
+  {
+    step: "03",
+    icon: BarChart3,
+    title: "Review & Improve",
+    description:
+      "Get detailed feedback on your answers, body language cues, and areas to strengthen before your real interview.",
+  },
+];
 
 export default function Home() {
   const router = useRouter();
   const [startLoading, setStartLoading] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [typedText, setTypedText] = useState("");
-  const heroRef = useRef(null);
-  const featuresRef = useRef(null);
-  const pricingRef = useRef(null);
-
-  const fullText = "like the real panel.";
+  const heroRef = useRef<HTMLElement>(null);
+  const featuresRef = useRef<HTMLElement>(null);
+  const howItWorksRef = useRef<HTMLElement>(null);
+  const pricingRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll();
-  const featuresInView = useInView(featuresRef, {
-    once: true,
-    margin: "-100px",
-  });
-  const pricingInView = useInView(pricingRef, { once: true, margin: "-100px" });
+  const featuresInView = useInView(featuresRef, { once: true, margin: "-50px" });
+  const howItWorksInView = useInView(howItWorksRef, { once: true, margin: "-50px" });
+  const pricingInView = useInView(pricingRef, { once: true, margin: "-50px" });
 
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-
-  // Smooth mouse tracking for magnetic effects
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { damping: 30, stiffness: 200 });
-  const smoothMouseY = useSpring(mouseY, { damping: 30, stiffness: 200 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
-  // Typing effect
-  useEffect(() => {
-    let currentIndex = 0;
-    const typingInterval = setInterval(() => {
-      if (currentIndex <= fullText.length) {
-        setTypedText(fullText.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(typingInterval);
-      }
-    }, 80); // 80ms per character for smooth typing
-
-    return () => clearInterval(typingInterval);
-  }, [fullText]);
+  const y1 = useTransform(scrollYProgress, [0, 0.3], [0, -30]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
 
   async function handleStartClick() {
     if (startLoading) return;
@@ -129,1074 +219,379 @@ export default function Home() {
     }
   }
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Animated background gradient */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 -z-10"
-        animate={{
-          background: [
-            "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)",
-            "radial-gradient(circle at 80% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%), radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)",
-            "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)",
-          ],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
+  function handleContactSales() {
+    window.location.href = "mailto:sales@panelroom.io?subject=Enterprise%20Inquiry";
+  }
 
-      {/* Revolutionary particle system with trails - static positions to avoid hydration errors */}
+  return (
+    <div className="relative min-h-screen bg-background text-foreground">
+      {/* Subtle background */}
       <div className="pointer-events-none fixed inset-0 -z-10">
-        {[
-          { x: 10, y: 20, large: false, delay: 0 },
-          { x: 25, y: 15, large: false, delay: 0.5 },
-          { x: 40, y: 30, large: true, delay: 1 },
-          { x: 55, y: 10, large: false, delay: 1.5 },
-          { x: 70, y: 25, large: false, delay: 2 },
-          { x: 85, y: 18, large: true, delay: 2.5 },
-          { x: 15, y: 50, large: false, delay: 0.3 },
-          { x: 30, y: 60, large: false, delay: 0.8 },
-          { x: 45, y: 55, large: false, delay: 1.3 },
-          { x: 60, y: 65, large: true, delay: 1.8 },
-          { x: 75, y: 58, large: false, delay: 2.3 },
-          { x: 90, y: 70, large: false, delay: 2.8 },
-          { x: 20, y: 80, large: false, delay: 0.6 },
-          { x: 35, y: 85, large: false, delay: 1.1 },
-          { x: 50, y: 90, large: true, delay: 1.6 },
-          { x: 65, y: 82, large: false, delay: 2.1 },
-          { x: 80, y: 88, large: false, delay: 2.6 },
-          { x: 5, y: 40, large: false, delay: 0.4 },
-          { x: 95, y: 45, large: true, delay: 0.9 },
-          { x: 12, y: 75, large: false, delay: 1.4 },
-        ].map((particle, i) => (
-          <motion.div
-            key={i}
-            className={`absolute rounded-full ${
-              particle.large ? "h-2 w-2 bg-primary/40" : "h-1 w-1 bg-primary/30"
-            }`}
-            style={{
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-              filter: particle.large ? "blur(1px)" : "blur(0.5px)",
-            }}
-            animate={{
-              y: [0, -60, 0],
-              x: [0, particle.x > 50 ? 20 : -20, 0],
-              opacity: [0, 0.6, 0],
-              scale: [0, particle.large ? 1.8 : 1.2, 0],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              delay: particle.delay,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:48px_48px]" />
+        <motion.div
+          className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-3xl"
+          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 right-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.03] blur-3xl"
+          animate={{ x: [0, -40, 0], y: [0, -30, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        />
       </div>
 
-      {/* Animated mesh gradient overlay */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 -z-10 opacity-30"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.1) 100%)",
-        }}
-        animate={{
-          background: [
-            "radial-gradient(circle at 30% 40%, rgba(120, 119, 198, 0.1) 0%, transparent 50%)",
-            "radial-gradient(circle at 70% 60%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)",
-            "radial-gradient(circle at 30% 40%, rgba(120, 119, 198, 0.1) 0%, transparent 50%)",
-          ],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Hero */}
-      <section
-        ref={heroRef}
-        className="relative overflow-hidden border-b border-border/50 bg-gradient-to-b from-background via-background to-background/80"
-      >
-        {/* Dynamic gradient orb that follows mouse */}
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative pt-8 pb-16 lg:pt-12 lg:pb-24">
         <motion.div
-          className="pointer-events-none absolute -z-10 h-[500px] w-[500px] rounded-full bg-gradient-to-r from-primary/20 via-emerald-500/20 to-sky-500/20 blur-3xl"
-          style={{ x: smoothMouseX, y: smoothMouseY }}
-          transition={{
-            type: "spring",
-            damping: 30,
-            stiffness: 50,
-          }}
-        />
-
-        <div className="pointer-events-none absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl">
-          <motion.div
-            className="relative left-1/2 aspect-[1108/632] w-[72rem] -translate-x-1/2 bg-gradient-to-tr from-primary/30 via-emerald-500/10 to-sky-500/30 opacity-40"
-            animate={{
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        </div>
-
-        <motion.div
-          className="mx-auto flex max-w-3xl flex-col items-center gap-12 px-6 pb-20 pt-16 text-center lg:pb-24 lg:pt-20"
-          style={{ y: y1, opacity, scale }}
+          className="mx-auto max-w-5xl px-6 text-center"
+          style={{ y: y1, opacity: heroOpacity }}
         >
           <motion.div
-            className="w-full space-y-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            className="space-y-8"
           >
+            {/* Badge */}
             <motion.div variants={itemVariants}>
-              <Badge className="border-primary/30 bg-primary/10 text-xs font-medium text-primary">
-                Free during beta · AI tech interview platform
+              <Badge className="border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                Now in Public Beta
               </Badge>
             </motion.div>
 
+            {/* Headline */}
             <motion.h1
-              className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
               variants={itemVariants}
+              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl leading-tight"
             >
-              Practice tech interviews that feel
-              <span className="relative inline-block">
-                {/* Invisible placeholder to reserve space */}
-                <span className="invisible">{fullText}</span>
-                {/* Visible typed text positioned absolutely */}
-                <span className="absolute left-0 top-0 bg-gradient-to-r from-primary via-emerald-500 to-sky-500 bg-clip-text text-transparent">
-                  {typedText}
-                  {typedText.length < fullText.length && (
-                    <motion.span
-                      className="inline-block w-[3px] h-[1em] bg-primary ml-1 align-middle"
-                      animate={{ opacity: [1, 0] }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                      }}
-                    />
-                  )}
-                </span>
+              Your AI Interview Coach.
+              <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-primary via-blue-500 to-emerald-500 bg-clip-text text-transparent">
+                Practice. Improve. Get Hired.
               </span>
             </motion.h1>
 
+            {/* Subheadline */}
             <motion.p
-              className="mx-auto max-w-2xl text-balance text-sm text-muted-foreground sm:text-base"
               variants={itemVariants}
+              className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl"
             >
-              Upload your resume, step into an AI-powered interview room, and
-              get structured feedback on how you actually perform in coding,
-              system design, and behavioral rounds.
+              Panelroom simulates real technical interviews with AI that adapts to your resume, 
+              target role, and skill level. Get instant feedback and land your dream job.
             </motion.p>
 
+            {/* CTA Buttons */}
             <motion.div
-              className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
               variants={itemVariants}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+              <Button
+                size="lg"
+                onClick={handleStartClick}
+                disabled={startLoading}
+                className="group h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
               >
-                <Button
-                  size="lg"
-                  onClick={handleStartClick}
-                  disabled={startLoading}
-                  className="group relative w-full overflow-hidden shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/40 sm:w-auto"
-                >
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.6 }}
-                  />
-                  <span className="relative flex items-center gap-2">
-                    Start practicing
-                    <motion.svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      initial={{ x: 0 }}
-                      whileHover={{ x: 4 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </motion.svg>
-                  </span>
-                </Button>
-              </motion.div>
+                Start Free Interview
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                asChild
+                className="h-12 px-8 text-base"
+              >
+                <a href="#how-it-works">Watch Demo</a>
+              </Button>
             </motion.div>
 
-            {/* Trust indicators with animations */}
+            {/* Trust indicators */}
             <motion.div
-              className="flex flex-wrap items-center justify-center gap-3 pt-2 text-center"
               variants={itemVariants}
+              className="flex flex-wrap items-center justify-center gap-6 pt-4 text-sm text-muted-foreground"
             >
-              <motion.div
-                className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5"
-                whileHover={{ scale: 1.05 }}
-              >
-                <motion.div
-                  className="h-2 w-2 rounded-full bg-emerald-500"
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <span className="text-xs font-medium text-emerald-400">
-                  Free during beta
-                </span>
-              </motion.div>
-              <motion.div
-                className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <svg
-                  className="h-4 w-4 text-primary"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>No credit card</span>
-              </motion.div>
-              <motion.div
-                className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9 }}
-              >
-                <svg
-                  className="h-4 w-4 text-primary"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Unlimited sessions</span>
-              </motion.div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-emerald-500" />
+                <span>No credit card needed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-emerald-500" />
+                <span>Ready in 2 minutes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-emerald-500" />
+                <span>Works with any tech role</span>
+              </div>
             </motion.div>
+          </motion.div>
 
-            {/* Animated statistics cards */}
-            <motion.div
-              className="grid grid-cols-2 gap-3 pt-6 sm:gap-4 md:grid-cols-3"
-              variants={containerVariants}
-            >
+          {/* Hero Illustration */}
+          <motion.div
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-12 lg:mt-16"
+          >
+            <HeroIllustration className="opacity-90" />
+          </motion.div>
+
+          {/* Stats row */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4"
+          >
+            {[
+              { value: "10K+", label: "Interviews Completed" },
+              { value: "95%", label: "User Satisfaction" },
+              { value: "3 Types", label: "Interview Formats" },
+              { value: "24/7", label: "Availability" },
+            ].map((stat, i) => (
               <motion.div
+                key={i}
                 variants={itemVariants}
-                className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-card/80"
-                whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                className="rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative">
-                  <motion.div
-                    className="mb-2 inline-flex rounded-lg bg-primary/10 p-2"
-                    whileHover={{ rotate: 8, scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                  >
-                    <svg
-                      className="h-5 w-5 text-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </motion.div>
-                  <div className="text-xl font-bold text-foreground sm:text-2xl">
-                    3-step
-                  </div>
-                  <div className="text-xs text-muted-foreground sm:text-sm">
-                    Upload, practice, review
-                  </div>
+                <div className="text-2xl font-bold text-foreground sm:text-3xl">
+                  {stat.value}
+                </div>
+                <div className="text-xs text-muted-foreground sm:text-sm">
+                  {stat.label}
                 </div>
               </motion.div>
-              <motion.div
-                variants={itemVariants}
-                className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all hover:border-emerald-500/50 hover:bg-card/80"
-                whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative">
-                  <motion.div
-                    className="mb-2 inline-flex rounded-lg bg-emerald-500/10 p-2"
-                    whileHover={{ rotate: 8, scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                  >
-                    <svg
-                      className="h-5 w-5 text-emerald-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  </motion.div>
-                  <div className="text-xl font-bold text-foreground sm:text-2xl">
-                    Panel-style
-                  </div>
-                  <div className="text-xs text-muted-foreground sm:text-sm">
-                    Real interviewer patterns
-                  </div>
-                </div>
-              </motion.div>
-              <motion.div
-                variants={itemVariants}
-                className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all hover:border-sky-500/50 hover:bg-card/80 md:col-span-1 col-span-2"
-                whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative">
-                  <motion.div
-                    className="mb-2 inline-flex rounded-lg bg-sky-500/10 p-2"
-                    whileHover={{ rotate: 8, scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                  >
-                    <svg
-                      className="h-5 w-5 text-sky-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </motion.div>
-                  <div className="text-xl font-bold text-foreground sm:text-2xl">
-                    24/7 Access
-                  </div>
-                  <div className="text-xs text-muted-foreground sm:text-sm">
-                    Practice anytime, anywhere
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
+            ))}
           </motion.div>
         </motion.div>
       </section>
 
-      {/* How it works / features */}
+      {/* Features Section */}
       <section
         id="features"
         ref={featuresRef}
-        className="relative border-b border-border/50 bg-background"
+        className="relative border-t border-border/50 bg-muted/30 py-20 lg:py-28"
       >
-        {/* Animated grid background */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-        <motion.div
-          className="relative mx-auto max-w-6xl space-y-8 px-6 py-12 sm:py-16 lg:py-20"
-          initial="hidden"
-          animate={featuresInView ? "visible" : "hidden"}
-          variants={containerVariants}
-        >
+        <div className="mx-auto max-w-6xl px-6">
           <motion.div
-            className="max-w-3xl space-y-4 text-center mx-auto"
-            variants={itemVariants}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Badge
-                variant="outline"
-                className="border-primary/30 bg-primary/5 text-xs uppercase tracking-wide text-primary"
-              >
-                <span className="flex items-center gap-1.5">
-                  <svg
-                    className="h-3 w-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                  </svg>
-                  How it works
-                </span>
-              </Badge>
-            </motion.div>
-            <motion.h2
-              className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
-              variants={itemVariants}
-            >
-              From resume to realistic practice
-              <motion.span
-                className="block bg-gradient-to-r from-primary via-emerald-500 to-sky-500 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{ backgroundSize: "200% 200%" }}
-              >
-                in minutes
-              </motion.span>
-            </motion.h2>
-            <motion.p
-              className="text-base text-muted-foreground sm:text-lg max-w-2xl mx-auto"
-              variants={itemVariants}
-            >
-              Panelroom turns your resume into a structured profile, spins up an
-              AI interviewer that understands your background, and delivers
-              actionable insights after every session.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            initial="hidden"
+            animate={featuresInView ? "visible" : "hidden"}
             variants={containerVariants}
+            className="space-y-12"
           >
-            <motion.div variants={cardVariants} className="flex">
-              <motion.div
-                className="flex-1"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              >
-                <Card className="group relative flex h-full flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-emerald-500/60 hover:shadow-xl hover:shadow-emerald-500/10">
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <CardHeader className="flex-none space-y-3">
-                    <motion.div
-                      className="inline-flex w-fit rounded-xl bg-emerald-500/10 p-3"
-                      whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <svg
-                        className="h-6 w-6 text-emerald-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </motion.div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        AI practice interview rooms
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        Step into a live, conversational interview that feels
-                        like a real hiring panel.
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Coding, system design, and behavioral prompts in one
-                        flow
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Difficulty that adapts to your answers and experience
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Runs in your browser using camera, mic, and transcripts
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+            {/* Section header */}
+            <motion.div variants={itemVariants} className="text-center space-y-4">
+              <Badge variant="outline" className="text-xs uppercase tracking-wider">
+                Why Panelroom
+              </Badge>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Interview prep that actually works
+              </h2>
+              <p className="mx-auto max-w-2xl text-muted-foreground">
+                Built by engineers who&apos;ve been through hundreds of tech interviews. 
+                Every feature is designed to help you perform your best when it matters.
+              </p>
             </motion.div>
 
-            {/* Structured interview history */}
-            <motion.div variants={cardVariants} className="flex">
-              <motion.div
-                className="flex-1"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              >
-                <Card className="group relative flex h-full flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/10">
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <CardHeader className="flex-none space-y-3">
-                    <motion.div
-                      className="inline-flex w-fit rounded-xl bg-primary/10 p-3"
-                      whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <svg
-                        className="h-6 w-6 text-primary"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 17v2m6-2v2M9 9h6m-9 4h12M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"
-                        />
-                      </svg>
-                    </motion.div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        Structured interview history
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        Every practice session saved with a clear timeline, so
-                        you can see your progress at a glance.
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Chronological view of interviews with timestamps and
-                        outcomes.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Jump back into detailed summaries and transcripts
-                        whenever you need.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Filter by company, role, or interview type to focus your
-                        prep.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-
+            {/* Features grid */}
             <motion.div
-              variants={cardVariants}
-              className="flex md:col-span-2 lg:col-span-1"
+              variants={containerVariants}
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
             >
-              <motion.div
-                className="flex-1"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              >
-                <Card className="group relative flex h-full flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-sky-500/60 hover:shadow-xl hover:shadow-sky-500/10">
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-sky-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <CardHeader className="flex-none space-y-3">
-                    <motion.div
-                      className="inline-flex w-fit rounded-xl bg-sky-500/10 p-3"
-                      whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <svg
-                        className="h-6 w-6 text-sky-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+              {features.map((feature, i) => (
+                <motion.div key={i} variants={cardVariants}>
+                  <Card className="group h-full border-border/50 bg-card/80 backdrop-blur-sm transition-all hover:border-border hover:shadow-lg">
+                    <CardHeader className="space-y-4">
+                      <div
+                        className={`inline-flex w-fit rounded-xl ${feature.bgColor} p-3`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                        />
-                      </svg>
-                    </motion.div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        Interview insights
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        See where you&apos;re strong, where you&apos;re stuck,
-                        and what to practice next.
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-sky-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        Session summaries with strengths and areas of
-                        improvement
+                        <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                      </div>
+                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        {feature.description}
                       </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-sky-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>
-                        High-level scores for technical depth and communication
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="h-5 w-5 mt-0.5 flex-shrink-0 text-sky-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p>Trend over time so you know when you&apos;re ready</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Pricing - free during beta */}
+      {/* How It Works Section */}
+      <section
+        id="how-it-works"
+        ref={howItWorksRef}
+        className="relative border-t border-border/50 py-20 lg:py-28"
+      >
+        <div className="mx-auto max-w-6xl px-6">
+          <motion.div
+            initial="hidden"
+            animate={howItWorksInView ? "visible" : "hidden"}
+            variants={containerVariants}
+            className="space-y-12"
+          >
+            {/* Section header */}
+            <motion.div variants={itemVariants} className="text-center space-y-4">
+              <Badge variant="outline" className="text-xs uppercase tracking-wider">
+                How It Works
+              </Badge>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Start practicing in under 2 minutes
+              </h2>
+              <p className="mx-auto max-w-2xl text-muted-foreground">
+                No complex setup. Upload your resume, choose your target role, 
+                and jump into a realistic AI interview session.
+              </p>
+            </motion.div>
+
+            {/* Steps */}
+            <motion.div
+              variants={containerVariants}
+              className="grid gap-8 md:grid-cols-3"
+            >
+              {steps.map((step, i) => (
+                <motion.div
+                  key={i}
+                  variants={cardVariants}
+                  className="relative text-center"
+                >
+                  {/* Connector line */}
+                  {i < steps.length - 1 && (
+                    <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-border to-transparent" />
+                  )}
+                  <div className="relative inline-flex">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-border/50 bg-card shadow-sm">
+                      <step.icon className="h-10 w-10 text-primary" />
+                    </div>
+                    <span className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                      {step.step}
+                    </span>
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {step.description}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
       <section
         id="pricing"
         ref={pricingRef}
-        className="relative border-b border-border/50 bg-gradient-to-b from-background to-primary/5"
+        className="relative border-t border-border/50 bg-muted/30 py-20 lg:py-28"
       >
-        {/* Animated gradient orbs */}
-        <motion.div
-          className="pointer-events-none absolute left-0 top-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl"
-          animate={{
-            x: [-50, 50, -50],
-            y: [-30, 30, -30],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="pointer-events-none absolute bottom-1/4 right-0 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl"
-          animate={{
-            x: [50, -50, 50],
-            y: [30, -30, 30],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        <motion.div
-          className="relative mx-auto max-w-6xl px-6 py-12 sm:py-16 lg:py-20"
-          initial="hidden"
-          animate={pricingInView ? "visible" : "hidden"}
-          variants={containerVariants}
-        >
+        <div className="mx-auto max-w-6xl px-6">
           <motion.div
-            className="max-w-3xl space-y-4 text-center mx-auto pb-8"
-            variants={itemVariants}
+            initial="hidden"
+            animate={pricingInView ? "visible" : "hidden"}
+            variants={containerVariants}
+            className="space-y-12"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
+            {/* Section header */}
+            <motion.div variants={itemVariants} className="text-center space-y-4">
               <Badge
                 variant="outline"
-                className="border-emerald-500/30 bg-emerald-500/5 text-xs uppercase tracking-wide text-emerald-500"
+                className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs uppercase tracking-wider"
               >
-                <span className="flex items-center gap-1.5">
-                  <svg
-                    className="h-3 w-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Free during beta
-                </span>
+                Pricing
               </Badge>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Invest in your career
+              </h2>
+              <p className="mx-auto max-w-2xl text-muted-foreground">
+                One successful interview can change your career trajectory. 
+                Start free and upgrade when you&apos;re ready to go all-in.
+              </p>
             </motion.div>
-            <motion.h2
-              className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
-              variants={itemVariants}
+
+            {/* Pricing cards */}
+            <motion.div
+              variants={containerVariants}
+              className="grid gap-6 md:grid-cols-3"
             >
-              Start practicing for
-              <motion.span
-                className="block bg-gradient-to-r from-emerald-500 via-primary to-sky-500 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{ backgroundSize: "200% 200%" }}
-              >
-                free today
-              </motion.span>
-            </motion.h2>
-            <motion.p
-              className="text-base text-muted-foreground sm:text-lg max-w-2xl mx-auto"
-              variants={itemVariants}
-            >
-              Full access to all features during beta. No credit card required,
-              no hidden fees.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className="mx-auto max-w-4xl"
-            variants={containerVariants}
-          >
-            <motion.div variants={cardVariants}>
-              <motion.div
-                whileHover={{ y: -8, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <Card className="group relative overflow-hidden border-border/50 bg-card shadow-2xl">
-                  <CardHeader className="space-y-4 pb-8">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <motion.div
-                            className="inline-flex rounded-lg bg-emerald-500/10 p-2"
-                            whileHover={{ rotate: 360, scale: 1.1 }}
-                            transition={{ duration: 0.6 }}
-                          >
-                            <svg
-                              className="h-5 w-5 text-emerald-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </motion.div>
-                          <CardTitle className="text-2xl">
-                            Beta Access
-                          </CardTitle>
-                        </div>
-                        <CardDescription className="text-base">
-                          Everything you need to ace your next technical
-                          interview
-                        </CardDescription>
+              {pricingPlans.map((plan, i) => (
+                <motion.div key={i} variants={cardVariants}>
+                  <Card
+                    className={`relative h-full flex flex-col ${
+                      plan.highlighted
+                        ? "border-primary shadow-xl shadow-primary/10 scale-[1.02]"
+                        : "border-border/50"
+                    }`}
+                  >
+                    {plan.badge && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                          {plan.badge}
+                        </Badge>
                       </div>
-                      <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
-                        Free
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-baseline gap-2">
-                      <motion.span
-                        className="text-5xl font-bold tracking-tight"
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                      >
-                        $0
-                      </motion.span>
-                      <span className="text-lg text-muted-foreground">
-                        / month
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Full access during beta. No credit card required.
-                    </p>
-                  </CardHeader>
-
-                  <CardContent className="space-y-6 pb-8">
-                    <div className="space-y-3">
-                      <p className="text-sm font-semibold text-foreground">
-                        Everything included:
-                      </p>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <motion.div
-                          className="flex items-start gap-2"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          <svg
-                            className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <div>
-                            <p className="text-sm font-medium">
-                              AI interview rooms
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Unlimited sessions
-                            </p>
-                          </div>
-                        </motion.div>
-                        <motion.div
-                          className="flex items-start gap-2"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          <svg
-                            className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <div>
-                            <p className="text-sm font-medium">
-                              Detailed insights
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              After every session
-                            </p>
-                          </div>
-                        </motion.div>
-                        <motion.div
-                          className="flex items-start gap-2"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.4 }}
-                        >
-                          <svg
-                            className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <div>
-                            <p className="text-sm font-medium">
-                              All interview types
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Coding, system design & behavioral
-                            </p>
-                          </div>
-                        </motion.div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
-                      <p className="text-xs text-muted-foreground">
-                        <span className="font-semibold text-foreground">
-                          Coming soon:
-                        </span>{" "}
-                        Team plans for hiring managers and interview
-                        coordinators
-                      </p>
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <motion.div
-                      className="w-full sm:w-auto"
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Button
-                        size="lg"
-                        onClick={handleStartClick}
-                        disabled={startLoading}
-                        className="group relative w-full overflow-hidden shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl hover:shadow-emerald-500/40 sm:w-auto"
-                      >
-                        <motion.span
-                          className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-white/20 to-emerald-500/0"
-                          initial={{ x: "-100%" }}
-                          whileHover={{ x: "100%" }}
-                          transition={{ duration: 0.6 }}
-                        />
-                        <span className="relative flex items-center gap-2">
-                          Start practicing free
-                          <motion.svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            initial={{ x: 0 }}
-                            whileHover={{ x: 4 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 7l5 5m0 0l-5 5m5-5H6"
-                            />
-                          </motion.svg>
+                    )}
+                    <CardHeader className="text-center pt-8">
+                      <CardTitle className="text-xl">{plan.name}</CardTitle>
+                      <CardDescription>{plan.description}</CardDescription>
+                      <div className="pt-4">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span className="text-muted-foreground ml-1">
+                          {plan.priceNote}
                         </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, j) => (
+                          <li key={j} className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter className="pt-4">
+                      <Button
+                        className="w-full"
+                        variant={plan.highlighted ? "default" : "outline"}
+                        size="lg"
+                        onClick={
+                          plan.name === "Teams"
+                            ? handleContactSales
+                            : handleStartClick
+                        }
+                      >
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
-                    </motion.div>
-                    <p className="text-xs text-center text-muted-foreground sm:text-left">
-                      No credit card · Start in 2 minutes
-                    </p>
-                  </CardFooter>
-                </Card>
-              </motion.div>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Beta notice */}
+            <motion.div
+              variants={itemVariants}
+              className="text-center text-sm text-muted-foreground"
+            >
+              <p>
+                All plans include full access during beta.{" "}
+                <span className="text-foreground font-medium">
+                  No credit card required.
+                </span>
+              </p>
             </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="relative border-b border-border/50 bg-background">
-        <div className="mx-auto max-w-4xl px-6 py-16 text-center sm:py-20 lg:py-24">
+      {/* Final CTA Section */}
+      <section className="relative border-t border-border/50 py-20 lg:py-28">
+        <div className="mx-auto max-w-4xl px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1207,47 +602,49 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Ready to ace your next interview?
             </h2>
-            <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Join engineers practicing with Panelroom. Upload your resume and
-              start your first AI interview in minutes.
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Join thousands of engineers practicing with Panelroom. Upload your
+              resume and start your first AI interview in minutes.
             </p>
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button
                 size="lg"
                 onClick={handleStartClick}
                 disabled={startLoading}
-                className="group relative overflow-hidden shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/40"
+                className="group h-12 px-8 text-base shadow-lg shadow-primary/20"
               >
-                <motion.span
-                  className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0"
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: "100%" }}
-                  transition={{ duration: 0.6 }}
-                />
-                <span className="relative flex items-center gap-2">
-                  Get started now
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </span>
+                Get Started Free
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 bg-muted/30 py-12">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} Panelroom. All rights reserved.
+            </div>
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors">
+                Terms of Service
+              </a>
+              <a
+                href="mailto:support@panelroom.io"
+                className="hover:text-foreground transition-colors"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

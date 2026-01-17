@@ -1,10 +1,39 @@
 'use client';
 
 import type { ReactNode } from "react";
-import { ClosedCaption, Mic, MicOff, PhoneOff, Settings, Video, VideoOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { memo, useMemo } from "react";
+import Image from "next/image";
+import { 
+  Captions, 
+  CaptionsOff,
+  Mic, 
+  MicOff, 
+  PhoneOff, 
+  Settings, 
+  Video, 
+  VideoOff,
+  Clock,
+  Sparkles,
+  Volume2,
+  User,
+  Bot,
+  Sun,
+  Moon,
+  Loader2,
+  AlertTriangle
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,6 +50,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 type DeviceOption = {
@@ -49,6 +84,7 @@ export type InterviewLayoutProps = {
   ccOn: boolean;
   settingsOpen: boolean;
   subtitleItems: { id: string; speaker: string; text: string }[];
+  audioLevel?: number; // 0-100 for mic input level
   onToggleMic?: () => void;
   onToggleCam?: () => void;
   onToggleCc?: () => void;
@@ -64,11 +100,157 @@ export type InterviewLayoutProps = {
   onSelectMicDevice?: (id: string) => void;
   onSelectCameraDevice?: (id: string) => void;
   onSelectSpeakerDevice?: (id: string) => void;
+  // End confirmation dialog
+  showEndConfirmDialog?: boolean;
+  onEndConfirm?: () => void;
+  onEndCancel?: () => void;
+  endingSession?: boolean;
+  // Agent connection status
+  agentConnected?: boolean;
 };
+
+// Memoized participant tile for performance
+const ParticipantTileComponent = memo(function ParticipantTileComponent({ 
+  tile, 
+  micOn, 
+  camOn,
+  isMainTile = false
+}: { 
+  tile: ParticipantTile; 
+  micOn: boolean; 
+  camOn: boolean;
+  isMainTile?: boolean;
+}) {
+  const isCandidate = tile.role === "candidate" || tile.isLocal;
+  const isAI = tile.role === "ai";
+  const speaking = !!tile.isSpeaking;
+  let hasAudio = isCandidate ? micOn : tile.hasAudio ?? true;
+  const hasVideo = isCandidate ? camOn : tile.hasVideo ?? !!tile.video;
+  
+  if (!hasAudio && speaking) {
+    hasAudio = true;
+  }
+  const muted = !hasAudio;
+
+  const initials = tile.name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]!)
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300",
+        isMainTile ? "h-full" : "h-full min-h-[200px]",
+        speaking 
+          ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/20" 
+          : "ring-1 ring-border",
+        // Theme-aware backgrounds
+        isAI && "bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900",
+        !isAI && "bg-muted dark:bg-slate-900"
+      )}
+    >
+      {/* Participant info badge */}
+      <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+        <div className={cn(
+          "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-md transition-colors",
+          speaking 
+            ? "bg-primary text-primary-foreground" 
+            : "bg-background/80 dark:bg-black/60 text-foreground dark:text-white border border-border dark:border-white/10"
+        )}>
+          {isAI ? (
+            <Bot className="h-3.5 w-3.5" />
+          ) : (
+            <User className="h-3.5 w-3.5" />
+          )}
+          <span>{isCandidate ? "You" : tile.name}</span>
+        </div>
+        
+        {/* Audio indicator */}
+        <div className={cn(
+          "flex h-7 w-7 items-center justify-center rounded-full backdrop-blur-md transition-all",
+          muted 
+            ? "bg-red-500 text-white" 
+            : speaking 
+              ? "bg-emerald-500 text-white animate-pulse" 
+              : "bg-background/80 dark:bg-black/60 text-muted-foreground border border-border dark:border-white/10"
+        )}>
+          {muted ? (
+            <MicOff className="h-3.5 w-3.5" />
+          ) : (
+            <Mic className="h-3.5 w-3.5" />
+          )}
+        </div>
+      </div>
+
+      {/* Video / Avatar area */}
+      <div className="relative flex-1 overflow-hidden">
+        <div className={cn(
+          "flex h-full w-full items-center justify-center",
+          "[&>video]:h-full [&>video]:w-full [&>video]:object-cover"
+        )}>
+          {tile.video && hasVideo ? (
+            tile.video
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-3">
+              {/* Avatar */}
+              <div className={cn(
+                "flex items-center justify-center rounded-full transition-all",
+                isMainTile ? "h-24 w-24" : "h-16 w-16",
+                isAI 
+                  ? "bg-gradient-to-br from-primary to-emerald-500 shadow-lg shadow-primary/30" 
+                  : "bg-gradient-to-br from-muted-foreground/30 to-muted-foreground/20 dark:from-slate-700 dark:to-slate-600",
+                speaking && "scale-105"
+              )}>
+                {isAI ? (
+                  <Sparkles className={cn(
+                    "text-white",
+                    isMainTile ? "h-10 w-10" : "h-7 w-7"
+                  )} />
+                ) : (
+                  <span className={cn(
+                    "font-semibold text-foreground dark:text-white",
+                    isMainTile ? "text-2xl" : "text-lg"
+                  )}>
+                    {initials}
+                  </span>
+                )}
+              </div>
+              
+              {/* Camera off indicator for candidate */}
+              {isCandidate && !hasVideo && (
+                <span className="text-xs text-muted-foreground">Camera off</span>
+              )}
+              
+              {/* AI status indicator */}
+              {isAI && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className={cn(
+                    "h-2 w-2 rounded-full",
+                    speaking ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/50"
+                  )} />
+                  {speaking ? "Speaking..." : "Listening"}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* Speaking wave animation overlay */}
+        {speaking && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-80" />
+        )}
+      </div>
+    </div>
+  );
+});
 
 export function InterviewLayout({
   roomLabel,
-  roundLabel = "Technical round",
+  roundLabel = "AI Practice Interview",
   elapsedTime,
   tiles,
   micOn,
@@ -91,292 +273,311 @@ export function InterviewLayout({
   onSelectMicDevice,
   onSelectCameraDevice,
   onSelectSpeakerDevice,
+  audioLevel = 0,
+  showEndConfirmDialog = false,
+  onEndConfirm,
+  onEndCancel,
+  endingSession = false,
+  agentConnected = false,
 }: InterviewLayoutProps) {
-  const tileCount = tiles.length || 1;
-  const cols =
-    tileCount <= 1 ? 1 : tileCount === 2 ? 2 : tileCount <= 4 ? 2 : tileCount <= 9 ? 3 : 4;
-  const gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  const { theme, setTheme } = useTheme();
 
-  const renderTile = (tile: ParticipantTile) => {
-    const isCandidate = tile.role === "candidate" || tile.isLocal;
-    const speaking = !!tile.isSpeaking;
-    let hasAudio = isCandidate ? micOn : tile.hasAudio ?? true;
-    const hasVideo = isCandidate ? camOn : tile.hasVideo ?? !!tile.video;
-    // If LiveKit reports the participant as speaking, treat their mic as on in the UI
-    if (!hasAudio && speaking) {
-      hasAudio = true;
-    }
-    const muted = !hasAudio;
+  // Memoize tile sorting for performance
+  const sortedTiles = useMemo(() => {
+    // Put AI first, then candidate
+    return [...tiles].sort((a, b) => {
+      if (a.role === "ai") return -1;
+      if (b.role === "ai") return 1;
+      if (a.isLocal) return 1;
+      if (b.isLocal) return -1;
+      return 0;
+    });
+  }, [tiles]);
 
-    const initials = tile.name
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0]!)
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-
-    return (
-      <Card
-        key={tile.id}
-        className={cn(
-          "relative flex h-full min-h-0 flex-col overflow-hidden border bg-card shadow-sm py-0",
-          speaking && "border-primary/70 shadow-[0_0_0_1px_rgba(0,90,139,0.7)]"
-        )}
-      >
-        <div className="pointer-events-none absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-md border bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm">
-          <span
-            className={cn(
-              "h-1.5 w-1.5 rounded-full",
-              muted ? "bg-zinc-400" : speaking ? "bg-emerald-500" : "bg-emerald-500/60"
-            )}
-          />
-          <span>{isCandidate ? "You" : tile.name}</span>
-          <span
-            className={cn(
-              "ml-1 flex h-4 w-4 items-center justify-center rounded-full border border-border bg-card text-[0.6rem]",
-              speaking && !muted && "border-emerald-500 bg-emerald-500/10"
-            )}
-          >
-            {muted ? (
-              <MicOff className="h-2.5 w-2.5" aria-hidden="true" />
-            ) : (
-              <Mic
-                className={cn(
-                  "h-2.5 w-2.5",
-                  speaking && "text-emerald-500"
-                )}
-                aria-hidden="true"
-              />
-            )}
-          </span>
-        </div>
-
-        <div className="relative flex-1 overflow-hidden bg-slate-900">
-          <div
-            className={cn(
-              "flex h-full w-full items-center justify-center [&>video]:h-full [&>video]:w-full [&>video]:object-cover",
-              isCandidate && !hasVideo && "opacity-40"
-            )}
-          >
-            {tile.video ? (
-              tile.video
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-slate-200">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
-                  <span className="text-base font-semibold text-white">
-                    {initials}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {isCandidate && (
-            <div
-              className={cn(
-                "pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-xs text-slate-200",
-                hasVideo ? "hidden" : "flex"
-              )}
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
-                <span className="text-lg font-semibold text-white">YO</span>
-              </div>
-              <div className="text-sm font-medium">Camera Disabled</div>
-            </div>
-          )}
-        </div>
-      </Card>
-    );
-  };
+  const aiTile = sortedTiles.find(t => t.role === "ai");
+  const candidateTile = sortedTiles.find(t => t.isLocal || t.role === "candidate");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Header */}
-      <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(0,90,139,0.6)]" />
-          <span>TalentScout.ai</span>
-          {roomLabel ? (
-            <span className="ml-2 text-xs text-muted-foreground">{roomLabel}</span>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-3 text-xs sm:text-sm">
-          {roundLabel ? (
-            <Badge
-              variant="outline"
-              className="border-primary/20 bg-primary/10 text-primary"
-            >
-              {roundLabel}
-            </Badge>
-          ) : null}
-          {elapsedTime ? (
-            <span className="font-mono text-[0.75rem] text-muted-foreground">
-              {elapsedTime}
-            </span>
-          ) : null}
-        </div>
-      </header>
-
-      {/* Main stage */}
-      <main className="relative flex-1 bg-[radial-gradient(circle_at_center,#f1f5f9_0%,hsl(var(--background))_100%)] p-3 sm:p-4">
-        {tileCount === 1 ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="w-full max-w-lg sm:max-w-2xl lg:max-w-4xl h-[60vh] sm:h-[65vh] lg:h-[70vh]">
-              {renderTile(tiles[0]!)}
+    <TooltipProvider delayDuration={300}>
+      <div className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
+        {/* Header - Minimal and elegant */}
+        <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-xl px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            {/* Logo */}
+            <div className="relative h-7 w-7">
+              <Image
+                src="/brand/icon-final.svg"
+                alt="Panelroom"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-          </div>
-        ) : (
-          <div className="h-[60vh] sm:h-[65vh] lg:h-[70vh]">
-            <div
-              className="grid h-full gap-3 [grid-auto-rows:minmax(0,1fr)]"
-              style={{ gridTemplateColumns }}
-            >
-              {tiles.map(renderTile)}
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-semibold text-foreground">Panelroom</h1>
             </div>
+            <div className="h-4 w-px bg-border hidden sm:block" />
+            <span className="text-xs text-muted-foreground hidden sm:block">{roundLabel}</span>
           </div>
-        )}
 
-        {/* Subtitles */}
-        <div className="pointer-events-none fixed inset-x-0 bottom-[110px] flex justify-center px-6">
-          {ccOn && subtitleItems.length > 0 && (
-            <div className="w-full max-w-[720px] min-h-[3.5rem] rounded-xl border border-white/10 bg-slate-900/90 px-6 py-3 text-base text-slate-50 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] backdrop-blur-md flex flex-col justify-end">
-              <div className="space-y-1.5">
-                {subtitleItems
-                  .slice(-2) // last two in chronological order
-                  .map((item, index, arr) => {
+          {/* Timer and Theme Toggle */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Connection status indicator */}
+            {agentConnected ? (
+              <div className="flex items-center gap-2 rounded-full bg-red-500/10 px-2.5 sm:px-3 py-1.5 border border-red-500/20">
+                <div className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                </div>
+                <span className="text-xs font-medium text-red-600 dark:text-red-400">LIVE</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-full bg-amber-500/10 px-2.5 sm:px-3 py-1.5 border border-amber-500/20">
+                <div className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-amber-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+                </div>
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Connecting...</span>
+              </div>
+            )}
+            
+            {/* Timer - only show when agent is connected */}
+            {agentConnected && elapsedTime && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                <span className="font-mono tabular-nums">{elapsedTime}</span>
+              </div>
+            )}
+
+            {/* Theme Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="h-8 w-8 rounded-full"
+                >
+                  <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </header>
+
+        {/* Main stage - Modern split layout */}
+        <main className="relative flex-1 overflow-hidden">
+          {/* Background gradient - Theme aware */}
+          <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,90,139,0.08),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(0,90,139,0.15),transparent_50%)]" />
+          
+          {/* Content */}
+          <div className="relative h-full p-4 sm:p-6">
+            {sortedTiles.length === 1 ? (
+              // Single participant - centered
+              <div className="flex h-full items-center justify-center">
+                <div className="w-full max-w-4xl h-[70vh]">
+                  <ParticipantTileComponent tile={sortedTiles[0]!} micOn={micOn} camOn={camOn} isMainTile />
+                </div>
+              </div>
+            ) : (
+              // Two participants - side by side on desktop, stacked on mobile
+              <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* AI Interviewer */}
+                {aiTile && (
+                  <div className="h-full min-h-[35vh] lg:min-h-0">
+                    <ParticipantTileComponent tile={aiTile} micOn={micOn} camOn={camOn} isMainTile />
+                  </div>
+                )}
+                
+                {/* Candidate */}
+                {candidateTile && (
+                  <div className="h-full min-h-[35vh] lg:min-h-0">
+                    <ParticipantTileComponent tile={candidateTile} micOn={micOn} camOn={camOn} isMainTile />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Subtitles - Redesigned */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-28 flex justify-center px-4 sm:px-6">
+            {ccOn && subtitleItems.length > 0 && (
+              <div className="w-full max-w-3xl rounded-2xl bg-card/95 dark:bg-black/80 backdrop-blur-xl border border-border px-6 py-4 shadow-2xl">
+                <div className="space-y-2">
+                  {subtitleItems.slice(-2).map((item, index, arr) => {
                     const isLatest = index === arr.length - 1;
+                    const isAI = item.speaker !== "You";
                     return (
                       <div
                         key={item.id}
                         className={cn(
-                          "grid grid-cols-[auto,minmax(0,1fr)] gap-3 text-sm leading-relaxed transition-all duration-300 ease-out",
-                          isLatest
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-80 -translate-y-0.5"
+                          "flex items-start gap-3 transition-all duration-300",
+                          isLatest ? "opacity-100" : "opacity-60"
                         )}
                       >
-                        <span className="mt-[3px] pr-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400 whitespace-nowrap">
-                          {item.speaker}
+                        <span className={cn(
+                          "shrink-0 mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                          isAI 
+                            ? "bg-primary/20 text-primary" 
+                            : "bg-emerald-500/20 text-emerald-500"
+                        )}>
+                          {item.speaker || (isAI ? "AI" : "You")}
                         </span>
-                        <span className="min-w-0 align-middle text-[0.9rem] leading-relaxed break-words text-slate-50">
+                        <p className="text-sm leading-relaxed text-foreground">
                           {item.text}
-                        </span>
+                        </p>
                       </div>
                     );
                   })}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </main>
 
-        {/* Controls dock */}
+        {/* Controls dock - Floating pill design */}
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-          <div className="flex items-center gap-3 rounded-full border border-border bg-card px-3 py-2 shadow-lg shadow-black/20">
-            <Button
-              type="button"
-              size="icon-lg"
-              variant={micOn ? "outline" : "destructive"}
-              onClick={onToggleMic}
-              aria-pressed={micOn}
-              aria-label={micOn ? "Mute microphone" : "Unmute microphone"}
-              className={cn(
-                "h-12 w-12 rounded-full",
-                !micOn && "bg-destructive text-destructive-foreground"
-              )}
-            >
-              {micOn ? (
-                <Mic className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <MicOff className="h-5 w-5 text-white" aria-hidden="true" />
-              )}
-            </Button>
+          <div className="flex items-center gap-2 rounded-2xl bg-card/95 dark:bg-slate-900/95 backdrop-blur-xl border border-border p-2 shadow-2xl">
+            {/* Mic toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  onClick={onToggleMic}
+                  aria-pressed={micOn}
+                  aria-label={micOn ? "Mute microphone" : "Unmute microphone"}
+                  className={cn(
+                    "h-12 w-12 rounded-xl transition-all",
+                    micOn 
+                      ? "bg-muted hover:bg-muted/80 text-foreground" 
+                      : "bg-red-500 hover:bg-red-600 text-white"
+                  )}
+                >
+                  {micOn ? (
+                    <Mic className="h-5 w-5" />
+                  ) : (
+                    <MicOff className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {micOn ? "Mute" : "Unmute"}
+              </TooltipContent>
+            </Tooltip>
 
-            <Button
-              type="button"
-              size="icon-lg"
-              variant={camOn ? "outline" : "destructive"}
-              onClick={onToggleCam}
-              aria-pressed={camOn}
-              aria-label={camOn ? "Turn camera off" : "Turn camera on"}
-              className={cn(
-                "h-12 w-12 rounded-full",
-                !camOn && "bg-destructive text-destructive-foreground"
-              )}
-            >
-              {camOn ? (
-                <Video className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <VideoOff className="h-5 w-5 text-white" aria-hidden="true" />
-              )}
-            </Button>
+            {/* Camera toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  onClick={onToggleCam}
+                  aria-pressed={camOn}
+                  aria-label={camOn ? "Turn camera off" : "Turn camera on"}
+                  className={cn(
+                    "h-12 w-12 rounded-xl transition-all",
+                    camOn 
+                      ? "bg-muted hover:bg-muted/80 text-foreground" 
+                      : "bg-red-500 hover:bg-red-600 text-white"
+                  )}
+                >
+                  {camOn ? (
+                    <Video className="h-5 w-5" />
+                  ) : (
+                    <VideoOff className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {camOn ? "Stop video" : "Start video"}
+              </TooltipContent>
+            </Tooltip>
 
-            <Button
-              type="button"
-              size="icon-lg"
-              variant="outline"
-              onClick={onToggleCc}
-              aria-pressed={ccOn}
-              aria-label={ccOn ? "Disable captions" : "Enable captions"}
-              className={cn(
-                // No hover animation; keep background consistent on hover
-                "h-12 w-12 rounded-full transition-none hover:bg-transparent hover:text-current",
-                ccOn &&
-                  "bg-primary text-primary-foreground border-primary hover:bg-primary hover:text-primary-foreground dark:bg-primary/80 dark:border-primary/80"
-              )}
-            >
-              <ClosedCaption className="h-5 w-5" aria-hidden="true" />
-            </Button>
+            {/* Captions toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  onClick={onToggleCc}
+                  aria-pressed={ccOn}
+                  aria-label={ccOn ? "Disable captions" : "Enable captions"}
+                  className={cn(
+                    "h-12 w-12 rounded-xl transition-all",
+                    ccOn 
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                      : "bg-muted hover:bg-muted/80 text-foreground"
+                  )}
+                >
+                  {ccOn ? (
+                    <Captions className="h-5 w-5" />
+                  ) : (
+                    <CaptionsOff className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {ccOn ? "Hide captions" : "Show captions"}
+              </TooltipContent>
+            </Tooltip>
 
-            <div className="mx-1 h-6 w-px bg-border" />
+            <div className="mx-1 h-8 w-px bg-border" />
 
+            {/* Settings */}
             <Dialog
               open={settingsOpen}
               onOpenChange={(open) => {
-                if (open) {
-                  onOpenSettings?.();
-                } else {
-                  onCloseSettings?.();
-                }
+                if (open) onOpenSettings?.();
+                else onCloseSettings?.();
               }}
             >
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon-lg"
-                  variant="outline"
-                  aria-haspopup="dialog"
-                  aria-expanded={settingsOpen}
-                  className="h-12 w-12 rounded-full"
-                >
-                  <Settings className="h-5 w-5" aria-hidden="true" />
-                </Button>
-              </DialogTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      size="icon"
+                      aria-haspopup="dialog"
+                      aria-expanded={settingsOpen}
+                      className="h-12 w-12 rounded-xl bg-muted hover:bg-muted/80 text-foreground"
+                    >
+                      <Settings className="h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="top">Settings</TooltipContent>
+              </Tooltip>
 
-              <DialogContent className="w-full max-w-lg">
+              <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Audio &amp; Video Settings</DialogTitle>
+                  <DialogTitle>Audio & Video Settings</DialogTitle>
                   <DialogDescription>
-                    Configure your input devices for the interview.
+                    Configure your devices for the best interview experience.
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="mt-4 space-y-4 text-xs">
+                <div className="mt-6 space-y-5">
+                  {/* Microphone */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">Microphone</Label>
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Mic className="h-4 w-4 text-muted-foreground" />
+                      Microphone
+                    </Label>
                     <Select
                       value={selectedMicId}
                       onValueChange={(value) => onSelectMicDevice?.(value)}
                     >
-                      <SelectTrigger className="h-9 w-full text-xs">
-                        <SelectValue
-                          placeholder={
-                            micDevices?.find((d) => d.id === selectedMicId)?.label ||
-                            "Select microphone"
-                          }
-                        />
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select microphone" />
                       </SelectTrigger>
-                      <SelectContent className="w-full text-xs">
+                      <SelectContent>
                         {(micDevices ?? []).map((d) => (
                           <SelectItem key={d.id} value={d.id}>
                             {d.label}
@@ -384,27 +585,31 @@ export function InterviewLayout({
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                      <div className="h-full w-1/2 rounded-full bg-emerald-500" />
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div 
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-100" 
+                          style={{ width: `${Math.min(100, Math.max(5, audioLevel))}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-20">Input level</span>
                     </div>
-                    <p className="mt-1 text-[0.7rem] text-muted-foreground">Input level</p>
                   </div>
 
+                  {/* Camera */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">Camera</Label>
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Video className="h-4 w-4 text-muted-foreground" />
+                      Camera
+                    </Label>
                     <Select
                       value={selectedCameraId}
                       onValueChange={(value) => onSelectCameraDevice?.(value)}
                     >
-                      <SelectTrigger className="h-9 w-full text-xs">
-                        <SelectValue
-                          placeholder={
-                            cameraDevices?.find((d) => d.id === selectedCameraId)?.label ||
-                            "Select camera"
-                          }
-                        />
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select camera" />
                       </SelectTrigger>
-                      <SelectContent className="w-full text-xs">
+                      <SelectContent>
                         {(cameraDevices ?? []).map((d) => (
                           <SelectItem key={d.id} value={d.id}>
                             {d.label}
@@ -414,21 +619,20 @@ export function InterviewLayout({
                     </Select>
                   </div>
 
+                  {/* Speakers */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">Speakers</Label>
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Volume2 className="h-4 w-4 text-muted-foreground" />
+                      Speakers
+                    </Label>
                     <Select
                       value={selectedSpeakerId}
                       onValueChange={(value) => onSelectSpeakerDevice?.(value)}
                     >
-                      <SelectTrigger className="h-9 w-full text-xs">
-                        <SelectValue
-                          placeholder={
-                            speakerDevices?.find((d) => d.id === selectedSpeakerId)?.label ||
-                            "Select speakers"
-                          }
-                        />
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select speakers" />
                       </SelectTrigger>
-                      <SelectContent className="w-full text-xs">
+                      <SelectContent>
                         {(speakerDevices ?? []).map((d) => (
                           <SelectItem key={d.id} value={d.id}>
                             {d.label}
@@ -439,18 +643,16 @@ export function InterviewLayout({
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-2">
+                <div className="mt-6 flex justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={() => onCloseSettings?.()}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="button"
-                    size="sm"
                     onClick={() => onCloseSettings?.()}
                   >
                     Done
@@ -459,21 +661,66 @@ export function InterviewLayout({
               </DialogContent>
             </Dialog>
 
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              onClick={onEndCall}
-              className="ml-1 flex h-12 items-center justify-center rounded-full px-4"
-            >
-              <PhoneOff className="mr-1 h-4 w-4" aria-hidden="true" />
-              End
-            </Button>
+            <div className="mx-1 h-8 w-px bg-border" />
+
+            {/* End call */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  onClick={onEndCall}
+                  disabled={endingSession}
+                  className="h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white px-5 gap-2"
+                >
+                  {endingSession ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <PhoneOff className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline font-medium">
+                    {endingSession ? "Ending..." : "End"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">End interview</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
-        {/* Settings handled by shadcn Dialog above */}
-      </main>
-    </div>
+        {/* End Confirmation Dialog */}
+        <AlertDialog open={showEndConfirmDialog} onOpenChange={(open: boolean) => !open && onEndCancel?.()}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                End Interview?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to end this interview? Your session will be saved and you&apos;ll be redirected to view your results and feedback.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={onEndCancel} disabled={endingSession}>
+                Continue Interview
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={onEndConfirm}
+                disabled={endingSession}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                {endingSession ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Ending...
+                  </>
+                ) : (
+                  "End Interview"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </TooltipProvider>
   );
 }
