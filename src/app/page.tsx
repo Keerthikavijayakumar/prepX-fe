@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { supabase } from "@/lib/supabaseClient";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -27,35 +26,22 @@ import {
   Upload,
   MessageSquare,
 } from "lucide-react";
-import { HeroIllustration } from "@/components/shared/hero-illustration";
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
+// Lazy-load the animated hero so it doesn't bloat the initial JS payload
+const HeroIllustration = dynamic(() =>
+  import("@/components/shared/hero-illustration").then((mod) => ({
+    default: mod.HeroIllustration,
+  })),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[320px] w-full rounded-3xl bg-muted/50"
+        aria-hidden
+        role="presentation"
+      />
+    ),
+  }
+);
 
 // Pricing plans - Simple Freemium Model (Beta)
 const pricingPlans = [
@@ -185,18 +171,11 @@ export default function Home() {
   const howItWorksRef = useRef<HTMLElement>(null);
   const pricingRef = useRef<HTMLElement>(null);
 
-  const { scrollYProgress } = useScroll();
-  const featuresInView = useInView(featuresRef, { once: true, margin: "-50px" });
-  const howItWorksInView = useInView(howItWorksRef, { once: true, margin: "-50px" });
-  const pricingInView = useInView(pricingRef, { once: true, margin: "-50px" });
-
-  const y1 = useTransform(scrollYProgress, [0, 0.3], [0, -30]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
-
   async function handleStartClick() {
     if (startLoading) return;
     setStartLoading(true);
     try {
+      const { supabase } = await import("@/lib/supabaseClient");
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         router.push("/dashboard");
@@ -219,6 +198,7 @@ export default function Home() {
     setWaitlistLoading(true);
     try {
       // Save to Supabase waitlist table
+      const { supabase } = await import("@/lib/supabaseClient");
       const { error } = await supabase
         .from("waitlist")
         .insert([
@@ -250,41 +230,24 @@ export default function Home() {
       {/* Subtle background */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:48px_48px]" />
-        <motion.div
-          className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-3xl"
-          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-1/2 right-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.03] blur-3xl"
-          animate={{ x: [0, -40, 0], y: [0, -30, 0] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-3xl" />
+        <div className="absolute top-1/2 right-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.03] blur-3xl" />
       </div>
 
       {/* Hero Section */}
       <section ref={heroRef} className="relative pt-12 pb-20 lg:pt-16 lg:pb-32">
-        <motion.div
-          className="mx-auto max-w-6xl px-6 text-center"
-          style={{ y: y1, opacity: heroOpacity }}
-        >
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-10"
-          >
+        <div className="mx-auto max-w-6xl px-6 text-center">
+          <div className="space-y-10">
             {/* Badge */}
-            <motion.div variants={itemVariants}>
+            <div>
               <Badge className="border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                 Now in Public Beta
               </Badge>
-            </motion.div>
+            </div>
 
             {/* Headline */}
-            <motion.h1
-              variants={itemVariants}
+            <h1
               className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl leading-[1.1] lg:leading-[1.1]"
             >
               Ace Your Tech Interview
@@ -292,21 +255,17 @@ export default function Home() {
               <span className="magma-text-animated inline-block mt-2">
                 with AI-Powered Practice
               </span>
-            </motion.h1>
+            </h1>
 
             {/* Subheadline */}
-            <motion.p
-              variants={itemVariants}
+            <p
               className="mx-auto max-w-2xl text-xl text-muted-foreground/90 sm:text-2xl leading-relaxed font-light"
             >
               Master behavioral, technical, and system design interviews with personalized AI coaching that adapts to your experience level.
-            </motion.p>
+            </p>
 
             {/* CTA Buttons */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button
                 size="lg"
                 onClick={handleStartClick}
@@ -324,13 +283,10 @@ export default function Home() {
               >
                 <a href="#how-it-works">See How It Works</a>
               </Button>
-            </motion.div>
+            </div>
 
             {/* Trust indicators */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap items-center justify-center gap-8 pt-6 text-base text-muted-foreground"
-            >
+            <div className="flex flex-wrap items-center justify-center gap-8 pt-6 text-base text-muted-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
                   <Check className="h-4 w-4 text-emerald-500" />
@@ -349,24 +305,19 @@ export default function Home() {
                 </div>
                 <span className="font-medium">No credit card required</span>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Hero Illustration */}
-          <motion.div
-            variants={itemVariants}
-            initial="hidden"
-            animate="visible"
-            className="mt-16 lg:mt-20"
-          >
+          <div className="mt-16 lg:mt-20">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
               <HeroIllustration className="opacity-90 rounded-2xl" />
             </div>
-          </motion.div>
+          </div>
 
 
-        </motion.div>
+        </div>
       </section>
 
       {/* Features Section */}
@@ -379,14 +330,9 @@ export default function Home() {
         <div className="thermal-orb thermal-orb-top-left" />
         
         <div className="mx-auto max-w-6xl px-6">
-          <motion.div
-            initial="hidden"
-            animate={featuresInView ? "visible" : "hidden"}
-            variants={containerVariants}
-            className="space-y-12"
-          >
+          <div className="space-y-12">
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-5">
+            <div className="text-center space-y-5">
               <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-1.5">
                 Why Panelroom
               </Badge>
@@ -397,15 +343,12 @@ export default function Home() {
                 Built by engineers who&apos;ve been through hundreds of tech interviews. 
                 Every feature is designed to help you perform your best when it matters.
               </p>
-            </motion.div>
+            </div>
 
             {/* Features grid */}
-            <motion.div
-              variants={containerVariants}
-              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            >
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, i) => (
-                <motion.div key={i} variants={cardVariants}>
+                <div key={i}>
                   <Card className="card-magma-accent group h-full transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 rounded-2xl overflow-hidden">
                     <CardHeader className="space-y-5 pb-4">
                       <div className="inline-flex w-fit rounded-2xl bg-gradient-to-br ${feature.gradient} p-0.5">
@@ -421,10 +364,10 @@ export default function Home() {
                       </p>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -438,14 +381,9 @@ export default function Home() {
         <div className="grid-layer opacity-20" />
         
         <div className="mx-auto max-w-6xl px-6">
-          <motion.div
-            initial="hidden"
-            animate={howItWorksInView ? "visible" : "hidden"}
-            variants={containerVariants}
-            className="space-y-12"
-          >
+          <div className="space-y-12">
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-5">
+            <div className="text-center space-y-5">
               <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-1.5">
                 How It Works
               </Badge>
@@ -455,17 +393,13 @@ export default function Home() {
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
                 No complex setup or lengthy tutorials. Start practicing immediately.
               </p>
-            </motion.div>
+            </div>
 
             {/* Steps */}
-            <motion.div
-              variants={containerVariants}
-              className="grid gap-8 md:grid-cols-3"
-            >
+            <div className="grid gap-8 md:grid-cols-3">
               {steps.map((step, i) => (
-                <motion.div
+                <div
                   key={i}
-                  variants={cardVariants}
                   className="relative"
                 >
                   {/* Connector line */}
@@ -486,10 +420,10 @@ export default function Home() {
                       {step.description}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -503,14 +437,9 @@ export default function Home() {
         <div className="thermal-orb thermal-orb-bottom-right" />
         
         <div className="mx-auto max-w-6xl px-6">
-          <motion.div
-            initial="hidden"
-            animate={pricingInView ? "visible" : "hidden"}
-            variants={containerVariants}
-            className="space-y-12"
-          >
+          <div className="space-y-12">
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-5">
+            <div className="text-center space-y-5">
               <Badge
                 variant="outline"
                 className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest font-semibold px-4 py-1.5"
@@ -523,15 +452,12 @@ export default function Home() {
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
                 Free forever tier available now. Pro features coming in Beta Phase 2. Start practicing with unlimited AI feedback today.
               </p>
-            </motion.div>
+            </div>
 
             {/* Pricing cards */}
-            <motion.div
-              variants={containerVariants}
-              className="grid gap-6 md:grid-cols-2 lg:max-w-4xl lg:mx-auto"
-            >
+            <div className="grid gap-6 md:grid-cols-2 lg:max-w-4xl lg:mx-auto">
               {pricingPlans.map((plan, i) => (
-                <motion.div key={i} variants={cardVariants}>
+                <div key={i}>
                   <Card
                     className={`relative h-full flex flex-col rounded-2xl transition-all duration-500 ${
                       plan.highlighted
@@ -597,23 +523,20 @@ export default function Home() {
                       </Button>
                     </CardFooter>
                   </Card>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
 
             {/* Beta notice */}
-            <motion.div
-              variants={itemVariants}
-              className="text-center text-sm text-muted-foreground"
-            >
+            <div className="text-center text-sm text-muted-foreground">
               <p>
-                🚀 <span className="text-amber-600 dark:text-amber-400 font-medium">Beta Phase 1:</span> Free tier is fully functional. Pro tier opens in Beta Phase 2.{" "}
+                🚀 <span className="text-amber-600 dark:text-amber-400 font-medium">Beta Phase 1:</span> Free tier is fully functional. Pro tier opens in Beta Phase 2.{' '}
                 <span className="text-foreground font-medium">
                   No credit card required.
                 </span>
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -621,13 +544,7 @@ export default function Home() {
       <section className="relative border-t border-border/50 py-24 lg:py-32 bg-gradient-to-br from-muted/30 via-background to-primary/5 overflow-hidden">
         <div className="thermal-orb thermal-orb-top-left opacity-50" />
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="card-glass p-12 lg:p-16 rounded-3xl space-y-8"
-          >
+          <div className="card-glass p-12 lg:p-16 rounded-3xl space-y-8">
             <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 px-4 py-1.5">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
               Now in Beta - Join 1,000+ Engineers
@@ -654,7 +571,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground">
               Free forever • Beta Phase 1 • No credit card needed • Give us feedback
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -686,13 +603,7 @@ export default function Home() {
       {/* Waitlist Modal */}
       {showWaitlistModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-            className="bg-background border border-border/50 rounded-2xl shadow-2xl max-w-md w-full p-8"
-          >
+          <div className="bg-background border border-border/50 rounded-2xl shadow-2xl max-w-md w-full p-8">
             {waitlistSuccess ? (
               <div className="text-center space-y-4">
                 <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 border-2 border-emerald-500">
@@ -766,7 +677,7 @@ export default function Home() {
                 </p>
               </form>
             )}
-          </motion.div>
+          </div>
         </div>
       )}
     </div>
