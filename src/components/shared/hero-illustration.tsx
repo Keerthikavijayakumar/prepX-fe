@@ -20,16 +20,16 @@ function HeroIllustrationComponent({ className = "" }: HeroIllustrationProps) {
       >
         <defs>
           <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.03" />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.03" />
           </linearGradient>
           <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#10b981" stopOpacity="0.15" />
             <stop offset="100%" stopColor="#10b981" stopOpacity="0.03" />
           </linearGradient>
           <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--background))" />
-            <stop offset="100%" stopColor="hsl(var(--muted))" />
+            <stop offset="0%" stopColor="var(--background)" />
+            <stop offset="100%" stopColor="var(--muted)" />
           </linearGradient>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -100,16 +100,16 @@ function HeroIllustrationComponent({ className = "" }: HeroIllustrationProps) {
               </motion.g>
               
               {/* AI Smile */}
-              <path d="M150 105 Q170 120 190 105" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" strokeLinecap="round" />
+              <path d="M150 105 Q170 120 190 105" stroke="var(--primary)" strokeWidth="3" fill="none" strokeLinecap="round" />
               
               {/* Signal waves - AI speaking indicator */}
               <motion.g
                 animate={{ opacity: [0.3, 1, 0.3], scale: [0.95, 1, 0.95] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <path d="M230 75 Q245 90 230 105" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.6" />
-                <path d="M240 65 Q260 90 240 115" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.4" />
-                <path d="M250 55 Q275 90 250 125" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.2" />
+                <path d="M230 75 Q245 90 230 105" stroke="var(--primary)" strokeWidth="2" fill="none" opacity="0.6" />
+                <path d="M240 65 Q260 90 240 115" stroke="var(--primary)" strokeWidth="2" fill="none" opacity="0.4" />
+                <path d="M250 55 Q275 90 250 125" stroke="var(--primary)" strokeWidth="2" fill="none" opacity="0.2" />
               </motion.g>
             </motion.g>
             

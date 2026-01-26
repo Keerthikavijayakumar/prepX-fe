@@ -98,13 +98,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-dark.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
       { url: "/favicon.ico", sizes: "32x32" },
     ],
     apple: [
-      { url: "/apple-icon.svg", type: "image/svg+xml" },
+      { url: "/logos/panelroom-app-icon.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/icon.svg",
+    shortcut: "/favicon.svg",
   },
   manifest: "/manifest.json",
 };

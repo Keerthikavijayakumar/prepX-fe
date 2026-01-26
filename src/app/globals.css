@@ -64,52 +64,72 @@
 :root {
   --radius: 0.65rem;
 
-  /* PRIMARY (darkened) */
-  --primary: #005A8B;
-  --primary-foreground: white;
+  /* Supernova Design System - Magma Spectrum */
+  --magma-1: #FF8A00;
+  --magma-2: #B30042;
+  --magma-3: #7A00FF;
+  --magma-gradient: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3));
+  --magma-gradient-reverse: linear-gradient(315deg, var(--magma-1), var(--magma-2), var(--magma-3));
+  --magma-gradient-radial: radial-gradient(circle, var(--magma-1), var(--magma-2), var(--magma-3));
+  
+  /* Magma Variants */
+  --magma-1-light: rgba(255, 138, 0, 0.1);
+  --magma-2-light: rgba(255, 0, 92, 0.1);
+  --magma-3-light: rgba(122, 0, 255, 0.1);
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
+  /* Light Mode Tokens */
+  --background: #FDFDFF;
+  --foreground: #050505;
+  --surface-light: rgba(0, 0, 0, 0.02);
+  --border-light: rgba(0, 0, 0, 0.06);
+  --grid-color: rgba(0, 0, 0, 0.03);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
+  /* PRIMARY (logo) - Updated to use Magma-2 */
+  --primary: var(--magma-2);
+  --primary-foreground: #FDFDFF;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
+  --action-secondary: var(--magma-2);
+  --border-color: var(--border-light);
 
-  --secondary: #D8ECF6;
-  --secondary-foreground: #00314a;
+  --card: #ffffff;
+  --card-foreground: #050505;
 
-  --muted: #e8f4fb;
-  --muted-foreground: #4b6782;
+  --popover: #ffffff;
+  --popover-foreground: #050505;
 
-  --accent: #e8f4fb;
-  --accent-foreground: #00314a;
+  --secondary: #EEF2FF;
+  --secondary-foreground: #050505;
+
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
+
+  --accent: var(--magma-1-light);
+  --accent-foreground: #050505;
 
   --destructive: #cc1122;
 
-  --border: #cfd9e3;
-  --input: #cfd9e3;
-  --ring: #005A8B;
+  --border: var(--border-color);
+  --input: var(--border-color);
+  --ring: var(--magma-2);
 
-  --chart-1: #005A8B;
-  --chart-2: #0077B5;
-  --chart-3: #479dc9;
-  --chart-4: #71b8d9;
-  --chart-5: #c1e5f3;
+  --chart-1: #050505;
+  --chart-2: #334155;
+  --chart-3: #64748B;
+  --chart-4: #94A3B8;
+  --chart-5: #CBD5E1;
 
-  --sidebar:#f1f8fc;
-  --sidebar-foreground:#00314a;
-  --sidebar-primary:#005A8B;
-  --sidebar-primary-foreground:white;
-  --sidebar-accent:#e8f4fb;
-  --sidebar-accent-foreground:#00314a;
-  --sidebar-border:#cfd9e3;
-  --sidebar-ring:#005A8B;
+  --sidebar:#F8FAFC;
+  --sidebar-foreground:#050505;
+  --sidebar-primary:#050505;
+  --sidebar-primary-foreground:#FDFDFF;
+  --sidebar-accent:#F1F5F9;
+  --sidebar-accent-foreground:#050505;
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--primary);
 }
 
 /* .dark {
-  --primary:#0077B5;
+  --primary:#818CF8;
   --primary-foreground:white;
 
   --background:#001521;
@@ -153,57 +173,112 @@
 } */
 
 .dark {
-  --primary:#0077B5;
-  --primary-foreground:white;
+  /* Supernova Design System - Magma Spectrum (Enhanced for Dark Mode) */
+  --magma-1: #FFB347;
+  --magma-2: #CC1459;
+  --magma-3: #9D4EFF;
+  --magma-gradient: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3));
+  --magma-gradient-reverse: linear-gradient(315deg, var(--magma-1), var(--magma-2), var(--magma-3));
+  --magma-gradient-radial: radial-gradient(circle, var(--magma-1), var(--magma-2), var(--magma-3));
+  
+  /* Magma Variants for Dark Mode */
+  --magma-1-light: rgba(255, 179, 71, 0.15);
+  --magma-2-light: rgba(255, 26, 117, 0.15);
+  --magma-3-light: rgba(157, 78, 255, 0.15);
 
-  --background:#0d1117;
-  --foreground:#e7eef5;
+  /* Dark Mode Tokens */
+  --background: #050505;
+  --foreground: #ffffff;
+  --surface-dark: rgba(255, 255, 255, 0.03);
+  --border-dark: rgba(255, 255, 255, 0.08);
+  --grid-color: rgba(255, 255, 255, 0.03);
 
-  --card:#11151b;
-  --card-foreground:white;
+  --primary: var(--magma-2);
+  --primary-foreground: #ffffff;
 
-  --popover:#11151b;
-  --popover-foreground:white;
+  --action-secondary: var(--magma-2);
+  --border-color: var(--border-dark);
 
-  --secondary:#1a222b;
-  --secondary-foreground:white;
+  --card: #0F172A;
+  --card-foreground: #E5E7EB;
 
-  --muted:#1a222b;
-  --muted-foreground:#b5cce0;
+  --popover: #0F172A;
+  --popover-foreground: #E5E7EB;
 
-  --accent:#1a222b;
-  --accent-foreground:white;
+  --secondary: #111827;
+  --secondary-foreground: #E5E7EB;
 
-  --destructive:#b91c1c;
+  --muted: #111827;
+  --muted-foreground: #94A3B8;
 
-  --border:#1a222b;
-  --input:#1a222b;
-  --ring:#66bfea;
+  --accent: var(--magma-3-light);
+  --accent-foreground: #E5E7EB;
+
+  --destructive: #b91c1c;
+
+  --border: var(--border-color);
+  --input: var(--border-color);
+  --ring: var(--magma-2);
 
   /* CHARTS */
-  --chart-1:#66bfea;
-  --chart-2:#3ea3cf;
-  --chart-3:#0077B5;
-  --chart-4:#005a8b;
-  --chart-5:#003e62;
+  --chart-1: #ffffff;
+  --chart-2: #A78BFA;
+  --chart-3: #6366F1;
+  --chart-4: #8B5CF6;
+  --chart-5: #C4B5FD;
 
   /* SIDEBAR */
-  --sidebar:#0d1117;
-  --sidebar-foreground:white;
-  --sidebar-primary:#0077B5;
-  --sidebar-primary-foreground:white;
-  --sidebar-accent:#1a222b;
-  --sidebar-accent-foreground:white;
-  --sidebar-border:#1a222b;
-  --sidebar-ring:#66bfea;
+  --sidebar: #0d1117;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #050505;
+  --sidebar-accent: #111827;
+  --sidebar-accent-foreground: #E5E7EB;
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--magma-2);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  
   body {
     @apply bg-background text-foreground;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* Supernova Grid Layer - Minimal geometric background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(var(--grid-color) 1.5px, transparent 1.5px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* Thermal Orb System - Dynamic radial glows */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, var(--magma-2) / 2%, transparent 50%),
+      radial-gradient(circle at 80% 80%, var(--magma-1) / 1.5%, transparent 50%);
+    background-size: 100% 100%;
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 0;
+  }
+  
+  /* Ensure content stays above background layers */
+  body > * {
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -219,6 +294,296 @@
   
   .contain-content {
     contain: content;
+  }
+
+  /* ===== SUPERNOVA GRADIENT UTILITIES ===== */
+  
+  /* Standard 135deg Linear Flow (Primary) */
+  .magma-gradient {
+    background: var(--magma-gradient);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Reverse 315deg Linear Flow (Counter-flow for interactions) */
+  .magma-gradient-reverse {
+    background: var(--magma-gradient-reverse);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Radial Convergence (Centric Flow - for thermal effects) */
+  .magma-gradient-radial {
+    background: var(--magma-gradient-radial);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Thermal Orb - Large diffused radial glow */
+  .thermal-orb {
+    position: absolute;
+    width: 45vw;
+    height: 45vw;
+    background: var(--magma-gradient-radial);
+    filter: blur(140px);
+    opacity: 0.06;
+    pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .thermal-orb-top-left {
+    top: -15%;
+    left: -10%;
+  }
+  
+  .thermal-orb-bottom-right {
+    bottom: -15%;
+    right: -10%;
+  }
+  
+  /* Grid Layer Background */
+  .grid-layer {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    opacity: var(--grid-opacity, 0.03);
+  }
+  
+  /* Gradient Text - Supernova branding */
+  .magma-text {
+    background: var(--magma-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+  }
+  
+  .magma-text-animated {
+    background: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3), var(--magma-1));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: magma-shift 8s ease infinite;
+  }
+  
+  .magma-border {
+    border-image: var(--magma-gradient) 1;
+  }
+  
+  .magma-shadow {
+    box-shadow: 0 4px 20px rgba(255, 0, 92, 0.3), 0 8px 40px rgba(122, 0, 255, 0.2);
+  }
+  
+  .magma-glow {
+    box-shadow: 
+      0 0 20px rgba(255, 138, 0, 0.4),
+      0 0 40px rgba(255, 0, 92, 0.3),
+      0 0 60px rgba(122, 0, 255, 0.2);
+  }
+  
+  /* ===== SUPERNOVA BUTTON STYLES ===== */
+  
+  /* Primary Magma Button */
+  .btn-magma {
+    background: var(--magma-gradient);
+    color: white;
+    border: none;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-magma:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(255, 0, 92, 0.4), 0 12px 50px rgba(122, 0, 255, 0.3);
+  }
+  
+  /* Reverse gradient on hover (counter-flow interaction) */
+  .btn-magma-reverse {
+    background: var(--magma-gradient);
+    color: white;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .btn-magma-reverse:hover {
+    background: var(--magma-gradient-reverse);
+    transform: translateY(-2px);
+  }
+  
+  /* Glassmorphic button with magma accent */
+  .btn-glass-magma {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .btn-glass-magma:hover {
+    background: var(--magma-gradient);
+    border-color: transparent;
+    transform: translateY(-2px);
+  }
+  
+  /* Magma Accent Background */
+  .bg-magma-1 {
+    background-color: var(--magma-1);
+  }
+  
+  .bg-magma-2 {
+    background-color: var(--magma-2);
+  }
+  
+  .bg-magma-3 {
+    background-color: var(--magma-3);
+  }
+  
+  .bg-magma-1-light {
+    background-color: var(--magma-1-light);
+  }
+  
+  .bg-magma-2-light {
+    background-color: var(--magma-2-light);
+  }
+  
+  .bg-magma-3-light {
+    background-color: var(--magma-3-light);
+  }
+  
+  /* Magma Text Colors */
+  .text-magma-1 {
+    color: var(--magma-1);
+  }
+  
+  .text-magma-2 {
+    color: var(--magma-2);
+  }
+  
+  .text-magma-3 {
+    color: var(--magma-3);
+  }
+  
+  /* Magma Border Colors */
+  .border-magma-1 {
+    border-color: var(--magma-1);
+  }
+  
+  .border-magma-2 {
+    border-color: var(--magma-2);
+  }
+  
+  .border-magma-3 {
+    border-color: var(--magma-3);
+  }
+  
+  /* ===== SUPERNOVA CARD STYLES ===== */
+  
+  /* Standard Magma Card */
+  .card-magma {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .card-magma:hover {
+    border-color: rgba(255, 138, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(255, 138, 0, 0.15);
+    transform: translateY(-4px);
+  }
+  
+  /* Magma Accent Card with gradient border */
+  .card-magma-accent {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .card-magma-accent::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--magma-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .card-magma-accent:hover::before {
+    opacity: 1;
+  }
+  
+  .card-magma-accent:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(255, 0, 92, 0.2);
+  }
+  
+  /* Glassmorphic Card */
+  .card-glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .card-glass:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* ===== SUPERNOVA ANIMATION SYSTEM ===== */
+  
+  /* Thermal Breathing Effect - Subtle pulsing glow */
+  @keyframes thermal-breathe {
+    0%, 100% {
+      opacity: 0.03;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.08;
+      transform: scale(1.05);
+    }
+  }
+  
+  .thermal-breathe {
+    animation: thermal-breathe 8s ease-in-out infinite;
+  }
+  
+  /* Magma Pulse - Radial expansion effect */
+  @keyframes magma-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(255, 0, 92, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 20px 10px rgba(255, 0, 92, 0);
+    }
+  }
+  
+  .magma-pulse {
+    animation: magma-pulse 2s ease-in-out infinite;
+  }
+  
+  /* Animated Magma Gradient */
+  @keyframes magma-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .magma-animated {
+    background: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3), var(--magma-1));
+    background-size: 200% 200%;
+    animation: magma-shift 8s ease infinite;
   }
 
   @keyframes ripple {

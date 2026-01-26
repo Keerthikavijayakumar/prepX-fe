@@ -37,6 +37,8 @@ export default function InterviewResultsPage({ params }: ResultsPageProps) {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Load results (agent has already saved them before ending session)
+  // No polling needed - results are finalized when we reach this page
   useEffect(() => {
     async function loadResults() {
       try {
@@ -59,25 +61,6 @@ export default function InterviewResultsPage({ params }: ResultsPageProps) {
 
     loadResults();
   }, [sessionId]);
-
-  // Poll for results if score is not yet available (agent still processing)
-  useEffect(() => {
-    if (!session || session.score_overall !== null && session.score_overall !== undefined) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const data = await interviewApi.getSession(sessionId);
-        if (data && data.score_overall !== null && data.score_overall !== undefined) {
-          setSession(data);
-          clearInterval(pollInterval);
-        }
-      } catch (err) {
-        console.error("Poll error:", err);
-      }
-    }, 3000);
-
-    return () => clearInterval(pollInterval);
-  }, [session, sessionId]);
 
   if (loading) {
     return (

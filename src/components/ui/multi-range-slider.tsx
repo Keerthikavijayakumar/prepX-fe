@@ -7,7 +7,7 @@ import { MessageSquare } from "lucide-react";
 
 // Branded color palette - professional and cohesive
 const SECTION_COLORS = [
-  { bg: "bg-primary", bgHex: "hsl(var(--primary))", light: "bg-primary/10", border: "border-primary/30", text: "text-primary" },
+  { bg: "bg-primary", bgHex: "var(--primary)", light: "bg-primary/10", border: "border-primary/30", text: "text-primary" },
   { bg: "bg-emerald-500", bgHex: "#10b981", light: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-600 dark:text-emerald-400" },
   { bg: "bg-amber-500", bgHex: "#f59e0b", light: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-600 dark:text-amber-400" },
   { bg: "bg-violet-500", bgHex: "#8b5cf6", light: "bg-violet-500/10", border: "border-violet-500/30", text: "text-violet-600 dark:text-violet-400" },

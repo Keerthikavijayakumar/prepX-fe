@@ -249,34 +249,8 @@ function InterviewExperience({
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [speakerDevices, setSpeakerDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string | undefined>();
-  const [selectedCameraId, setSelectedCameraId] = useState<
-    string | undefined
-  >();
-  const [selectedSpeakerId, setSelectedSpeakerId] = useState<
-    string | undefined
-  >();
-  
-  // Audio level for input meter
-  const [audioLevel, setAudioLevel] = useState(0);
-
-  // Track audio level from local participant
-  useEffect(() => {
-    if (!localParticipant) return;
-    
-    const updateAudioLevel = () => {
-      // Get audio level from local participant (0-1 range)
-      const level = (localParticipant as any).audioLevel ?? 0;
-      // Convert to percentage (0-100)
-      setAudioLevel(Math.round(level * 100));
-    };
-
-    // Update audio level every 100ms
-    const interval = setInterval(updateAudioLevel, 100);
-    return () => clearInterval(interval);
-  }, [localParticipant]);
-
-  // Track if agent is connected (sending time updates)
-  const [agentConnected, setAgentConnected] = useState(false);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | undefined>();
+  const [selectedSpeakerId, setSelectedSpeakerId] = useState<string | undefined>();
 
   // Check if agent is in the room
   const agentInRoom = participants.some((p) => {
@@ -296,75 +270,32 @@ function InterviewExperience({
     );
   });
 
-  // Listen for room disconnection and agent leaving - redirect to results
+  // Listen for room disconnection - when agent session ends, room is deleted and we get disconnected
+  // Agent-driven lifecycle: when agent finishes, it ends the session which deletes the room
   useEffect(() => {
     if (!room) return;
 
     const handleDisconnected = () => {
-      console.log("[Interview] Room disconnected - redirecting to results");
+      console.log("[Interview] Room disconnected - agent session ended, redirecting to results");
       onEndCall();
     };
 
-    const handleParticipantLeft = (participant: any) => {
-      // Check if the leaving participant is the agent
-      const isAgent = 
-        participant.identity === "ai-interviewer" ||
-        participant.identity?.toLowerCase().includes("agent") ||
-        (() => {
-          if (!participant.metadata) return false;
-          try {
-            const meta = JSON.parse(participant.metadata);
-            return meta?.kind === "ai-interview" || meta?.agent === true;
-          } catch {
-            return false;
-          }
-        })();
-
-      if (isAgent) {
-        console.log("[Interview] Agent left the room - redirecting to results");
-        onEndCall();
-      }
-    };
-
     room.on("disconnected", handleDisconnected);
-    room.on("participantDisconnected", handleParticipantLeft);
 
     return () => {
       room.off("disconnected", handleDisconnected);
-      room.off("participantDisconnected", handleParticipantLeft);
     };
   }, [room, onEndCall]);
-
-  // Timeout: if agent doesn't join within 15 seconds, session likely ended - redirect
-  useEffect(() => {
-    if (agentInRoom) return; // Agent is here, no need for timeout
-
-    const timeout = setTimeout(() => {
-      if (!agentInRoom) {
-        console.log("[Interview] Agent not present after timeout - session likely ended, redirecting to results");
-        onEndCall();
-      }
-    }, 15000); // 15 second timeout
-
-    return () => clearTimeout(timeout);
-  }, [agentInRoom, onEndCall]);
 
   // Listen for elapsed time updates from agent via text stream
   useEffect(() => {
     if (!room) return;
 
-    console.log("[Interview] Registering elapsed time handler, room:", room);
-    console.log("[Interview] registerTextStreamHandler exists:", typeof (room as any).registerTextStreamHandler);
-
     const handleElapsedTimeStream = async (reader: any, participantInfo: any) => {
       try {
-        console.log("[Interview] Received elapsed time stream from:", participantInfo?.identity);
-        // Read the text content (it's just the formatted time like "05:23")
         const timeText = await reader.readAll();
-        console.log("[Interview] Elapsed time received:", timeText);
         if (timeText && /^\d{2}:\d{2}$/.test(timeText.trim())) {
           setElapsedTime(timeText.trim());
-          setAgentConnected(true);
         }
       } catch (err) {
         console.error("[Interview] Error reading elapsed time stream:", err);
@@ -375,9 +306,6 @@ function InterviewExperience({
     try {
       if (typeof (room as any).registerTextStreamHandler === "function") {
         (room as any).registerTextStreamHandler("lk.elapsed_time", handleElapsedTimeStream);
-        console.log("[Interview] ✅ Elapsed time handler registered");
-      } else {
-        console.warn("[Interview] ⚠️ registerTextStreamHandler not available on room");
       }
     } catch (err) {
       console.error("[Interview] Error registering text stream handler:", err);
@@ -660,8 +588,6 @@ function InterviewExperience({
       onSelectMicDevice={handleMicDeviceChange}
       onSelectCameraDevice={handleCameraDeviceChange}
       onSelectSpeakerDevice={handleSpeakerDeviceChange}
-      audioLevel={audioLevel}
-      agentConnected={agentConnected}
       onEndCall={handleEndCallRequest}
       showEndConfirmDialog={showEndConfirm}
       onEndConfirm={handleEndCallConfirm}

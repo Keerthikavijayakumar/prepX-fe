@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, History, User, Sparkles } from "lucide-react";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
+import { LogoLockupLight, LogoLockupDark } from "@/components/ui/Logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -70,10 +70,10 @@ function NavbarComponent() {
       {/* Main Navbar - Fixed position, consistent across all pages */}
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
-            : "bg-background/60 backdrop-blur-md border-b border-transparent"
+            ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
+            : "bg-background/60 backdrop-blur-md border-b border-border/50"
         )}
       >
         <div className="max-w-7xl mx-auto">
@@ -82,23 +82,11 @@ function NavbarComponent() {
             <div className="flex items-center gap-8">
               <Link 
                 href="/" 
-                className="flex items-center shrink-0 group"
+                className="flex items-center shrink-0 group py-1"
               >
-                <div className="relative h-9 w-[140px] transition-transform duration-200 group-hover:scale-[1.02]">
-                  <Image
-                    src="/brand/logo-v3-light.svg"
-                    alt="Panelroom"
-                    fill
-                    className="object-contain object-left block dark:hidden"
-                    priority
-                  />
-                  <Image
-                    src="/brand/logo-v3-dark.svg"
-                    alt="Panelroom"
-                    fill
-                    className="object-contain object-left hidden dark:block"
-                    priority
-                  />
+                <div className="transition-transform duration-200 group-hover:scale-[1.02]">
+                  <LogoLockupLight size="lg" className="block dark:hidden h-10 sm:h-12" />
+                  <LogoLockupDark size="lg" className="hidden dark:block h-10 sm:h-12" />
                 </div>
               </Link>
 

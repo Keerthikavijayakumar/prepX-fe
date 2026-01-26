@@ -57,109 +57,93 @@ const cardVariants = {
   },
 };
 
-// Pricing plans - Clear value proposition for each tier
+// Pricing plans - Simple Freemium Model (Beta)
 const pricingPlans = [
   {
     name: "Free",
-    description: "Explore Panelroom risk-free",
+    description: "Master interviews at your own pace",
     price: "$0",
     priceNote: "forever",
+    minutes: "60 min/month",
+    normalMinutes: "15 min/month",
+    limitedTimeOffer: true,
     highlighted: false,
     features: [
-      "3 AI mock interviews/month",
-      "Behavioral & technical rounds",
-      "Basic performance feedback",
-      "Session transcripts",
-      "Email support",
+      "2 full mock interviews per month (30 min each)",
+      "Real-time AI-powered feedback",
+      "FAANG company question bank",
+      "Interview transcripts & recordings",
+      "Performance scoring & insights",
+      "Join our community of engineers",
     ],
     cta: "Get Started Free",
-    badge: null,
+    badge: "Limited Time: 60 min",
+    disabled: false,
   },
   {
     name: "Pro",
-    description: "Land your dream tech job faster",
+    description: "Unlimited interview practice (Coming Soon)",
     price: "$19",
     priceNote: "/month",
+    minutes: "300 min/month",
     highlighted: true,
     features: [
-      "Unlimited AI interviews",
-      "System design deep-dives",
-      "Advanced analytics dashboard",
-      "Job description targeting",
-      "Interview recordings",
-      "Priority support",
+      "10 mock interviews per month",
+      "Deep AI analysis & improvement tips",
+      "Full FAANG + startup question library",
+      "Export transcripts & detailed reports",
+      "Advanced analytics & progress tracking",
+      "Priority email support (coming in Beta 2)",
     ],
-    cta: "Start 7-Day Free Trial",
-    badge: "Most Popular",
-  },
-  {
-    name: "Teams",
-    description: "Scale interview prep for your org",
-    price: "Custom",
-    priceNote: "pricing",
-    highlighted: false,
-    features: [
-      "Everything in Pro",
-      "Team analytics & benchmarks",
-      "Candidate assessment tools",
-      "Custom interview templates",
-      "SSO & admin controls",
-      "Dedicated success manager",
-    ],
-    cta: "Talk to Sales",
-    badge: "For Companies",
+    cta: "Join Waitlist",
+    badge: "Beta Limited",
+    disabled: true,
   },
 ];
 
-// Features data - Core value propositions
+// Features data - Core value propositions with magma colors
 const features = [
   {
     icon: Code2,
     title: "Live Coding Interviews",
     description:
       "Solve real coding problems in a live environment. Get instant AI feedback on your approach, complexity analysis, and code quality.",
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/10",
+    gradient: "from-blue-500 to-cyan-500",
   },
   {
     icon: Users,
     title: "System Design Practice",
     description:
       "Tackle architecture questions like you would at FAANG. Design distributed systems with guided prompts and expert-level evaluation.",
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
+    gradient: "from-purple-500 to-pink-500",
   },
   {
     icon: MessageSquare,
     title: "Behavioral Mastery",
     description:
       "Perfect your STAR responses with an AI that understands what hiring managers look for. Build confidence in storytelling.",
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-500/10",
+    gradient: "from-emerald-500 to-teal-500",
   },
   {
     icon: Target,
     title: "Role-Specific Prep",
     description:
       "Paste any job description and Panelroom generates targeted questions matching the exact skills and experience required.",
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
+    gradient: "from-orange-500 to-red-500",
   },
   {
     icon: BarChart3,
     title: "Performance Insights",
     description:
       "Track improvement over time with detailed analytics on technical accuracy, communication clarity, and problem-solving speed.",
-    color: "text-pink-500",
-    bgColor: "bg-pink-500/10",
+    gradient: "from-pink-500 to-rose-500",
   },
   {
     icon: Shield,
     title: "Resume Intelligence",
     description:
       "Our AI reads your resume to ask personalized questions about your projects, tech stack, and career trajectory.",
-    color: "text-cyan-500",
-    bgColor: "bg-cyan-500/10",
+    gradient: "from-cyan-500 to-blue-500",
   },
 ];
 
@@ -191,6 +175,11 @@ const steps = [
 export default function Home() {
   const router = useRouter();
   const [startLoading, setStartLoading] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const featuresRef = useRef<HTMLElement>(null);
   const howItWorksRef = useRef<HTMLElement>(null);
@@ -223,6 +212,39 @@ export default function Home() {
     window.location.href = "mailto:sales@panelroom.io?subject=Enterprise%20Inquiry";
   }
 
+  async function handleJoinWaitlist(e: React.FormEvent) {
+    e.preventDefault();
+    if (!waitlistEmail || !waitlistName) return;
+    
+    setWaitlistLoading(true);
+    try {
+      // Save to Supabase waitlist table
+      const { error } = await supabase
+        .from("waitlist")
+        .insert([
+          {
+            email: waitlistEmail,
+            name: waitlistName,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+
+      if (error) throw error;
+
+      setWaitlistSuccess(true);
+      setTimeout(() => {
+        setShowWaitlistModal(false);
+        setWaitlistEmail("");
+        setWaitlistName("");
+        setWaitlistSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error joining waitlist:", error);
+    } finally {
+      setWaitlistLoading(false);
+    }
+  }
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       {/* Subtle background */}
@@ -241,16 +263,16 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative pt-8 pb-16 lg:pt-12 lg:pb-24">
+      <section ref={heroRef} className="relative pt-12 pb-20 lg:pt-16 lg:pb-32">
         <motion.div
-          className="mx-auto max-w-5xl px-6 text-center"
+          className="mx-auto max-w-6xl px-6 text-center"
           style={{ y: y1, opacity: heroOpacity }}
         >
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-8"
+            className="space-y-10"
           >
             {/* Badge */}
             <motion.div variants={itemVariants}>
@@ -263,64 +285,69 @@ export default function Home() {
             {/* Headline */}
             <motion.h1
               variants={itemVariants}
-              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl leading-tight"
+              className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl leading-[1.1] lg:leading-[1.1]"
             >
-              Your AI Interview Coach.
-              <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-primary via-blue-500 to-emerald-500 bg-clip-text text-transparent">
-                Practice. Improve. Get Hired.
+              Ace Your Tech Interview
+              <br />
+              <span className="magma-text-animated inline-block mt-2">
+                with AI-Powered Practice
               </span>
             </motion.h1>
 
             {/* Subheadline */}
             <motion.p
               variants={itemVariants}
-              className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl"
+              className="mx-auto max-w-2xl text-xl text-muted-foreground/90 sm:text-2xl leading-relaxed font-light"
             >
-              Panelroom simulates real technical interviews with AI that adapts to your resume, 
-              target role, and skill level. Get instant feedback and land your dream job.
+              Master behavioral, technical, and system design interviews with personalized AI coaching that adapts to your experience level.
             </motion.p>
 
             {/* CTA Buttons */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Button
                 size="lg"
                 onClick={handleStartClick}
                 disabled={startLoading}
-                className="group h-12 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                className="btn-magma group h-14 px-10 text-lg font-semibold rounded-xl shadow-2xl"
               >
-                Start Free Interview
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Start Your Free Interview
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 asChild
-                className="h-12 px-8 text-base"
+                className="btn-glass-magma h-14 px-10 text-lg font-medium rounded-xl border-2"
               >
-                <a href="#how-it-works">Watch Demo</a>
+                <a href="#how-it-works">See How It Works</a>
               </Button>
             </motion.div>
 
             {/* Trust indicators */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap items-center justify-center gap-6 pt-4 text-sm text-muted-foreground"
+              className="flex flex-wrap items-center justify-center gap-8 pt-6 text-base text-muted-foreground"
             >
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-500" />
-                <span>No credit card needed</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                </div>
+                <span className="font-medium">Free to start</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-500" />
-                <span>Ready in 2 minutes</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                </div>
+                <span className="font-medium">Setup in 2 minutes</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-500" />
-                <span>Works with any tech role</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                </div>
+                <span className="font-medium">No credit card required</span>
               </div>
             </motion.div>
           </motion.div>
@@ -330,38 +357,15 @@ export default function Home() {
             variants={itemVariants}
             initial="hidden"
             animate="visible"
-            className="mt-12 lg:mt-16"
+            className="mt-16 lg:mt-20"
           >
-            <HeroIllustration className="opacity-90" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
+              <HeroIllustration className="opacity-90 rounded-2xl" />
+            </div>
           </motion.div>
 
-          {/* Stats row */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4"
-          >
-            {[
-              { value: "10K+", label: "Interviews Completed" },
-              { value: "95%", label: "User Satisfaction" },
-              { value: "3 Types", label: "Interview Formats" },
-              { value: "24/7", label: "Availability" },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                variants={itemVariants}
-                className="rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm"
-              >
-                <div className="text-2xl font-bold text-foreground sm:text-3xl">
-                  {stat.value}
-                </div>
-                <div className="text-xs text-muted-foreground sm:text-sm">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+
         </motion.div>
       </section>
 
@@ -369,8 +373,11 @@ export default function Home() {
       <section
         id="features"
         ref={featuresRef}
-        className="relative border-t border-border/50 bg-muted/30 py-20 lg:py-28"
+        className="relative border-t border-border/50 py-20 lg:py-28 bg-gradient-to-br from-background via-muted/20 to-background"
       >
+        {/* Decorative thermal orb */}
+        <div className="thermal-orb thermal-orb-top-left" />
+        
         <div className="mx-auto max-w-6xl px-6">
           <motion.div
             initial="hidden"
@@ -379,14 +386,14 @@ export default function Home() {
             className="space-y-12"
           >
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-4">
-              <Badge variant="outline" className="text-xs uppercase tracking-wider">
+            <motion.div variants={itemVariants} className="text-center space-y-5">
+              <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-1.5">
                 Why Panelroom
               </Badge>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Interview prep that actually works
+              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+                Everything you need to succeed
               </h2>
-              <p className="mx-auto max-w-2xl text-muted-foreground">
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
                 Built by engineers who&apos;ve been through hundreds of tech interviews. 
                 Every feature is designed to help you perform your best when it matters.
               </p>
@@ -399,17 +406,17 @@ export default function Home() {
             >
               {features.map((feature, i) => (
                 <motion.div key={i} variants={cardVariants}>
-                  <Card className="group h-full border-border/50 bg-card/80 backdrop-blur-sm transition-all hover:border-border hover:shadow-lg">
-                    <CardHeader className="space-y-4">
-                      <div
-                        className={`inline-flex w-fit rounded-xl ${feature.bgColor} p-3`}
-                      >
-                        <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  <Card className="card-magma-accent group h-full transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 rounded-2xl overflow-hidden">
+                    <CardHeader className="space-y-5 pb-4">
+                      <div className="inline-flex w-fit rounded-2xl bg-gradient-to-br ${feature.gradient} p-0.5">
+                        <div className="rounded-[14px] bg-background p-3">
+                          <feature.icon className={`h-7 w-7 bg-gradient-to-br ${feature.gradient} bg-clip-text text-transparent`} style={{ WebkitTextFillColor: 'transparent', backgroundClip: 'text' }} />
+                        </div>
                       </div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl font-bold group-hover:text-foreground transition-colors">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-base text-muted-foreground/80 leading-relaxed">
                         {feature.description}
                       </p>
                     </CardContent>
@@ -425,8 +432,11 @@ export default function Home() {
       <section
         id="how-it-works"
         ref={howItWorksRef}
-        className="relative border-t border-border/50 py-20 lg:py-28"
+        className="relative border-t border-border/50 py-20 lg:py-28 overflow-hidden"
       >
+        {/* Grid background layer */}
+        <div className="grid-layer opacity-20" />
+        
         <div className="mx-auto max-w-6xl px-6">
           <motion.div
             initial="hidden"
@@ -435,16 +445,15 @@ export default function Home() {
             className="space-y-12"
           >
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-4">
-              <Badge variant="outline" className="text-xs uppercase tracking-wider">
+            <motion.div variants={itemVariants} className="text-center space-y-5">
+              <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-1.5">
                 How It Works
               </Badge>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Start practicing in under 2 minutes
+              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+                Get started in 3 simple steps
               </h2>
-              <p className="mx-auto max-w-2xl text-muted-foreground">
-                No complex setup. Upload your resume, choose your target role, 
-                and jump into a realistic AI interview session.
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
+                No complex setup or lengthy tutorials. Start practicing immediately.
               </p>
             </motion.div>
 
@@ -457,24 +466,26 @@ export default function Home() {
                 <motion.div
                   key={i}
                   variants={cardVariants}
-                  className="relative text-center"
+                  className="relative"
                 >
                   {/* Connector line */}
                   {i < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-border to-transparent" />
+                    <div className="hidden md:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-primary/40 via-primary/20 to-transparent" />
                   )}
-                  <div className="relative inline-flex">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-border/50 bg-card shadow-sm">
-                      <step.icon className="h-10 w-10 text-primary" />
+                  <div className="card-glass p-8 rounded-2xl text-center h-full hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                    <div className="relative inline-flex mb-6">
+                      <div className="flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/20">
+                        <step.icon className="h-12 w-12 text-primary" />
+                      </div>
+                      <span className="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-sm font-bold text-primary-foreground shadow-lg">
+                        {step.step}
+                      </span>
                     </div>
-                    <span className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                      {step.step}
-                    </span>
+                    <h3 className="text-2xl font-bold mb-3">{step.title}</h3>
+                    <p className="text-base text-muted-foreground/80 leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
-                  <h3 className="mt-6 text-xl font-semibold">{step.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {step.description}
-                  </p>
                 </motion.div>
               ))}
             </motion.div>
@@ -486,8 +497,11 @@ export default function Home() {
       <section
         id="pricing"
         ref={pricingRef}
-        className="relative border-t border-border/50 bg-muted/30 py-20 lg:py-28"
+        className="relative border-t border-border/50 py-20 lg:py-28 bg-gradient-to-br from-muted/30 via-background to-muted/40 overflow-hidden"
       >
+        {/* Decorative thermal orb */}
+        <div className="thermal-orb thermal-orb-bottom-right" />
+        
         <div className="mx-auto max-w-6xl px-6">
           <motion.div
             initial="hidden"
@@ -496,52 +510,63 @@ export default function Home() {
             className="space-y-12"
           >
             {/* Section header */}
-            <motion.div variants={itemVariants} className="text-center space-y-4">
+            <motion.div variants={itemVariants} className="text-center space-y-5">
               <Badge
                 variant="outline"
-                className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs uppercase tracking-wider"
+                className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest font-semibold px-4 py-1.5"
               >
-                Pricing
+                🎯 Beta Launch - Limited Access
               </Badge>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Invest in your career
+              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+                Interview prep designed for serious learners
               </h2>
-              <p className="mx-auto max-w-2xl text-muted-foreground">
-                One successful interview can change your career trajectory. 
-                Start free and upgrade when you&apos;re ready to go all-in.
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
+                Free forever tier available now. Pro features coming in Beta Phase 2. Start practicing with unlimited AI feedback today.
               </p>
             </motion.div>
 
             {/* Pricing cards */}
             <motion.div
               variants={containerVariants}
-              className="grid gap-6 md:grid-cols-3"
+              className="grid gap-6 md:grid-cols-2 lg:max-w-4xl lg:mx-auto"
             >
               {pricingPlans.map((plan, i) => (
                 <motion.div key={i} variants={cardVariants}>
                   <Card
-                    className={`relative h-full flex flex-col ${
+                    className={`relative h-full flex flex-col rounded-2xl transition-all duration-500 ${
                       plan.highlighted
-                        ? "border-primary shadow-xl shadow-primary/10 scale-[1.02]"
-                        : "border-border/50"
-                    }`}
+                        ? "card-magma-accent shadow-2xl scale-[1.05] hover:scale-[1.06]"
+                        : "card-glass hover:shadow-xl hover:-translate-y-1"
+                    } ${plan.disabled ? "opacity-75" : ""}`}
                   >
                     {plan.badge && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                        <Badge className={`${
+                          plan.badge === "Beta Limited"
+                            ? "bg-amber-500 text-amber-950"
+                            : "bg-primary text-primary-foreground"
+                        } px-3 py-1`}>
                           {plan.badge}
                         </Badge>
                       </div>
                     )}
-                    <CardHeader className="text-center pt-8">
-                      <CardTitle className="text-xl">{plan.name}</CardTitle>
-                      <CardDescription>{plan.description}</CardDescription>
-                      <div className="pt-4">
-                        <span className="text-4xl font-bold">{plan.price}</span>
-                        <span className="text-muted-foreground ml-1">
+                    <CardHeader className="text-center pt-10 pb-6">
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      <CardDescription className="text-base mt-2">{plan.description}</CardDescription>
+                      <div className="pt-6">
+                        <span className="text-5xl font-extrabold">{plan.price}</span>
+                        <span className="text-muted-foreground ml-2 text-lg">
                           {plan.priceNote}
                         </span>
                       </div>
+                      <div className="mt-4 inline-block px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
+                        <span className="text-sm font-semibold text-primary">{plan.minutes}</span>
+                      </div>
+                      {plan.limitedTimeOffer && plan.normalMinutes && (
+                        <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                          <p>Normally {plan.normalMinutes} • Limited time offer</p>
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent className="flex-1">
                       <ul className="space-y-3">
@@ -558,14 +583,17 @@ export default function Home() {
                         className="w-full"
                         variant={plan.highlighted ? "default" : "outline"}
                         size="lg"
-                        onClick={
-                          plan.name === "Teams"
-                            ? handleContactSales
-                            : handleStartClick
-                        }
+                        onClick={() => {
+                          if (plan.disabled) {
+                            setShowWaitlistModal(true);
+                          } else {
+                            handleStartClick();
+                          }
+                        }}
+                        disabled={plan.disabled ? false : startLoading}
                       >
                         {plan.cta}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        {!plan.disabled && <ArrowRight className="ml-2 h-4 w-4" />}
                       </Button>
                     </CardFooter>
                   </Card>
@@ -579,7 +607,7 @@ export default function Home() {
               className="text-center text-sm text-muted-foreground"
             >
               <p>
-                All plans include full access during beta.{" "}
+                🚀 <span className="text-amber-600 dark:text-amber-400 font-medium">Beta Phase 1:</span> Free tier is fully functional. Pro tier opens in Beta Phase 2.{" "}
                 <span className="text-foreground font-medium">
                   No credit card required.
                 </span>
@@ -590,39 +618,48 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative border-t border-border/50 py-20 lg:py-28">
+      <section className="relative border-t border-border/50 py-24 lg:py-32 bg-gradient-to-br from-muted/30 via-background to-primary/5 overflow-hidden">
+        <div className="thermal-orb thermal-orb-top-left opacity-50" />
         <div className="mx-auto max-w-4xl px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="space-y-6"
+            className="card-glass p-12 lg:p-16 rounded-3xl space-y-8"
           >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Ready to ace your next interview?
+            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 px-4 py-1.5">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              Now in Beta - Join 1,000+ Engineers
+            </Badge>
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+              Start your interview prep journey.
+              <br />
+              <span className="magma-text">Get real feedback, not generic tips.</span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              Join thousands of engineers practicing with Panelroom. Upload your
-              resume and start your first AI interview in minutes.
+            <p className="mx-auto max-w-2xl text-xl text-muted-foreground/80 leading-relaxed">
+              Join our beta and get 2 free mock interviews per month. Unlimited AI feedback on every response. No credit card required, cancel anytime.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
               <Button
                 size="lg"
                 onClick={handleStartClick}
                 disabled={startLoading}
-                className="group h-12 px-8 text-base shadow-lg shadow-primary/20"
+                className="btn-magma group h-16 px-12 text-xl font-semibold rounded-xl shadow-2xl"
               >
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Get Started (Beta)
+                <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-1" />
               </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Free forever • Beta Phase 1 • No credit card needed • Give us feedback
+            </p>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-muted/30 py-12">
+      <footer className="border-t border-border/50 py-12 bg-gradient-to-b from-background to-muted/30">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-sm text-muted-foreground">
@@ -645,6 +682,93 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Waitlist Modal */}
+      {showWaitlistModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="bg-background border border-border/50 rounded-2xl shadow-2xl max-w-md w-full p-8"
+          >
+            {waitlistSuccess ? (
+              <div className="text-center space-y-4">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 border-2 border-emerald-500">
+                  <Check className="h-8 w-8 text-emerald-500" />
+                </div>
+                <h3 className="text-2xl font-bold">Welcome to the Waitlist!</h3>
+                <p className="text-muted-foreground">
+                  We'll notify you via email when Pro tier becomes available in Beta Phase 2.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleJoinWaitlist} className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold">Join the Waitlist</h2>
+                  <p className="text-muted-foreground">
+                    Get early access to our Pro tier with 300 min/month and advanced features.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={waitlistName}
+                      onChange={(e) => setWaitlistName(e.target.value)}
+                      required
+                      className="w-full px-4 py-2 rounded-lg border border-border/50 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      required
+                      className="w-full px-4 py-2 rounded-lg border border-border/50 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    type="submit"
+                    className="flex-1 btn-magma"
+                    disabled={waitlistLoading || !waitlistName || !waitlistEmail}
+                  >
+                    {waitlistLoading ? "Joining..." : "Join Waitlist"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowWaitlistModal(false);
+                      setWaitlistEmail("");
+                      setWaitlistName("");
+                    }}
+                    disabled={waitlistLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  We'll only use your email to notify you about Pro tier launch.
+                </p>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

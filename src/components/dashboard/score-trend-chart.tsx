@@ -127,7 +127,7 @@ export function ScoreTrendChart({ data, loading }: ScoreTrendChartProps) {
               <path
                 d={pathD}
                 fill="none"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 strokeWidth="2"
                 vectorEffect="non-scaling-stroke"
               />
@@ -139,7 +139,7 @@ export function ScoreTrendChart({ data, loading }: ScoreTrendChartProps) {
                   cx={p.x}
                   cy={p.y}
                   r="3"
-                  fill="hsl(var(--primary))"
+                  fill="var(--primary)"
                   className="hover:r-4 transition-all"
                 />
               ))}
@@ -147,8 +147,8 @@ export function ScoreTrendChart({ data, loading }: ScoreTrendChartProps) {
               {/* Gradient definition */}
               <defs>
                 <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                  <stop offset="0%" stopColor="var(--primary)" />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                 </linearGradient>
               </defs>
             </svg>

@@ -84,7 +84,6 @@ export type InterviewLayoutProps = {
   ccOn: boolean;
   settingsOpen: boolean;
   subtitleItems: { id: string; speaker: string; text: string }[];
-  audioLevel?: number; // 0-100 for mic input level
   onToggleMic?: () => void;
   onToggleCam?: () => void;
   onToggleCc?: () => void;
@@ -105,8 +104,6 @@ export type InterviewLayoutProps = {
   onEndConfirm?: () => void;
   onEndCancel?: () => void;
   endingSession?: boolean;
-  // Agent connection status
-  agentConnected?: boolean;
 };
 
 // Memoized participant tile for performance
@@ -273,12 +270,10 @@ export function InterviewLayout({
   onSelectMicDevice,
   onSelectCameraDevice,
   onSelectSpeakerDevice,
-  audioLevel = 0,
   showEndConfirmDialog = false,
   onEndConfirm,
   onEndCancel,
   endingSession = false,
-  agentConnected = false,
 }: InterviewLayoutProps) {
   const { theme, setTheme } = useTheme();
 
@@ -322,27 +317,17 @@ export function InterviewLayout({
 
           {/* Timer and Theme Toggle */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Connection status indicator */}
-            {agentConnected ? (
-              <div className="flex items-center gap-2 rounded-full bg-red-500/10 px-2.5 sm:px-3 py-1.5 border border-red-500/20">
-                <div className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-                </div>
-                <span className="text-xs font-medium text-red-600 dark:text-red-400">LIVE</span>
+            {/* Connection status - always live since room only exists when agent is present */}
+            <div className="flex items-center gap-2 rounded-full bg-red-500/10 px-2.5 sm:px-3 py-1.5 border border-red-500/20">
+              <div className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
               </div>
-            ) : (
-              <div className="flex items-center gap-2 rounded-full bg-amber-500/10 px-2.5 sm:px-3 py-1.5 border border-amber-500/20">
-                <div className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-amber-500 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-                </div>
-                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Connecting...</span>
-              </div>
-            )}
+              <span className="text-xs font-medium text-red-600 dark:text-red-400">LIVE</span>
+            </div>
             
-            {/* Timer - only show when agent is connected */}
-            {agentConnected && elapsedTime && (
+            {/* Timer */}
+            {elapsedTime && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
                 <span className="font-mono tabular-nums">{elapsedTime}</span>
@@ -585,15 +570,6 @@ export function InterviewLayout({
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                        <div 
-                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-100" 
-                          style={{ width: `${Math.min(100, Math.max(5, audioLevel))}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground w-20">Input level</span>
-                    </div>
                   </div>
 
                   {/* Camera */}
