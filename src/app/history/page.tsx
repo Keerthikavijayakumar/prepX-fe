@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
@@ -199,7 +199,7 @@ function HistorySkeleton() {
   );
 }
 
-export default function InterviewHistoryPage() {
+function InterviewHistoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -247,120 +247,128 @@ export default function InterviewHistoryPage() {
   };
 
   return (
-    <ProtectedRoute>
-      <main className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-foreground">Interview History</h1>
-            <p className="text-muted-foreground mt-1">
-              {loading ? "Loading..." : `${total} interview${total !== 1 ? "s" : ""} total`}
+    <main className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">Interview History</h1>
+          <p className="text-muted-foreground mt-1">
+            {loading ? "Loading..." : `${total} interview${total !== 1 ? "s" : ""} total`}
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Select value={currentStatus} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="timeout">Timed Out</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {totalPages > 1 && (
+            <p className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
             </p>
-          </div>
-
-          {/* Filters */}
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <Select value={currentStatus} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                  <SelectItem value="timeout">Timed Out</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {totalPages > 1 && (
-              <p className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </p>
-            )}
-          </div>
-
-          {/* Interview List */}
-          {loading ? (
-            <HistorySkeleton />
-          ) : interviews.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">No interviews found</h3>
-              <p className="text-muted-foreground mb-6">
-                {currentStatus !== "all"
-                  ? "Try changing the filter to see more interviews."
-                  : "Start your first interview to see your history here."}
-              </p>
-              <Button onClick={() => router.push("/dashboard")}>
-                Go to Dashboard
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {interviews.map((interview) => (
-                <InterviewCard key={interview.id} interview={interview} />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && !loading && (
-            <div className="flex items-center justify-center gap-2 mt-8">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </Button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === currentPage ? "default" : "ghost"}
-                      size="sm"
-                      className="w-9"
-                      onClick={() => handlePageChange(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
           )}
         </div>
-      </main>
+
+        {/* Interview List */}
+        {loading ? (
+          <HistorySkeleton />
+        ) : interviews.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-2">No interviews found</h3>
+            <p className="text-muted-foreground mb-6">
+              {currentStatus !== "all"
+                ? "Try changing the filter to see more interviews."
+                : "Start your first interview to see your history here."}
+            </p>
+            <Button onClick={() => router.push("/dashboard")}>
+              Go to Dashboard
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {interviews.map((interview) => (
+              <InterviewCard key={interview.id} interview={interview} />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && !loading && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === currentPage ? "default" : "ghost"}
+                    size="sm"
+                    className="w-9"
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+export default function InterviewHistoryPage() {
+  return (
+    <ProtectedRoute>
+      <Suspense fallback={<HistorySkeleton />}>
+        <InterviewHistoryContent />
+      </Suspense>
     </ProtectedRoute>
   );
 }
