@@ -32,7 +32,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/sign-in"] as const;
+const PUBLIC_ROUTES = ["/", "/sign-in", "/privacy-policy"] as const;
 
 // Routes that should redirect to dashboard if already authenticated
 const AUTH_ROUTES = ["/sign-in"] as const;

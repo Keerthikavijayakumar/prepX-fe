@@ -666,7 +666,7 @@ export default function Home() {
               &copy; {new Date().getFullYear()} Panelroom. All rights reserved.
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">
+              <a href="/privacy-policy" className="hover:text-foreground transition-colors">
                 Privacy Policy
               </a>
               <a href="#" className="hover:text-foreground transition-colors">
