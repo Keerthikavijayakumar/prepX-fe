@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     template: "%s | Panelroom",
   },
   description:
-    "Practice technical interviews with AI. Get real-time feedback on coding, system design, and behavioral rounds. Tailored to your resume and target role. Free during beta.",
+    "Practice technical interviews with Panelroom's AI-powered mock interview platform. Real-time feedback on coding, system design, and behavioral rounds. Personalized coaching based on your resume. Free during beta.",
   keywords: [
     "mock interview",
     "technical interview",
@@ -53,6 +53,8 @@ export const metadata: Metadata = {
     "interview practice",
     "interview preparation",
     "tech interview",
+    "interview coach",
+    "Panelroom",
   ],
   authors: [{ name: "Panelroom" }],
   creator: "Panelroom",
