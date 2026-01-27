@@ -102,9 +102,9 @@ export function LogoLockupLight({ size = 'lg', className = '' }: Omit<LogoProps,
         x="74"
         y="44"
         fill="currentColor"
-        fontWeight="800"
+        fontWeight="600"
         fontSize="36"
-        letterSpacing="-2.5"
+        letterSpacing="-1.2"
         style={{ fontFamily: 'var(--font-custom, Circular, custom-font, "Helvetica Neue", Helvetica, Arial, sans-serif)' }}
       >
         Panelroom
@@ -143,9 +143,9 @@ export function LogoLockupDark({ size = 'lg', className = '' }: Omit<LogoProps, 
         x="74"
         y="44"
         fill="currentColor"
-        fontWeight="800"
+        fontWeight="600"
         fontSize="36"
-        letterSpacing="-2.5"
+        letterSpacing="-1.2"
         style={{ fontFamily: 'var(--font-custom, Circular, custom-font, "Helvetica Neue", Helvetica, Arial, sans-serif)' }}
       >
         Panelroom

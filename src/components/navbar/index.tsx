@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, History, User, Sparkles } from "lucide-react";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
-import { LogoLockupLight, LogoLockupDark } from "@/components/ui/Logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -84,9 +84,17 @@ function NavbarComponent() {
                 href="/" 
                 className="flex items-center shrink-0 group py-1"
               >
-                <div className="transition-transform duration-200 group-hover:scale-[1.02]">
-                  <LogoLockupLight size="lg" className="block dark:hidden h-10 sm:h-12" />
-                  <LogoLockupDark size="lg" className="hidden dark:block h-10 sm:h-12" />
+                <div className="transition-transform duration-200 group-hover:scale-[1.02] h-10 sm:h-12">
+                  <img 
+                    src="/logos/panelroom-lockup-light.svg" 
+                    alt="Panelroom" 
+                    className="block dark:hidden h-full w-auto object-contain"
+                  />
+                  <img 
+                    src="/logos/panelroom-lockup-dark.svg" 
+                    alt="Panelroom" 
+                    className="hidden dark:block h-full w-auto object-contain"
+                  />
                 </div>
               </Link>
 
