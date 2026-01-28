@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Get authentication headers for API requests
@@ -50,6 +50,27 @@ export interface InterviewConfig {
   target_role: string;
   target_company?: string;
   job_description?: string;
+  sections?: InterviewSection[];
+}
+
+export interface InterviewSection {
+  name: string;
+  weight: number;
+  min_questions: number;
+  max_questions: number;
+}
+
+export interface InterviewPlan {
+  sections: InterviewSection[];
+  total_duration_seconds: number;
+  estimated_questions: number;
+}
+
+export interface GeneratePlanResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+  plan?: InterviewPlan;
 }
 
 export interface StartSessionResponse {
@@ -81,6 +102,7 @@ export interface SessionResponse {
   target_company?: string;
   job_description?: string;
   duration_minutes: number;
+  sections?: InterviewSection[];
   score_overall?: number;
   feedback_summary?: string;
   feedback_details?: any;
@@ -90,6 +112,30 @@ export interface SessionResponse {
 export interface EndSessionResponse {
   success: boolean;
   message?: string;
+  sessionId?: string;
+}
+
+export interface InterviewHistoryItem {
+  id: string;
+  status: "active" | "completed" | "failed" | "timeout";
+  started_at: string;
+  ended_at?: string;
+  target_role?: string;
+  target_company?: string;
+  complexity: "beginner" | "intermediate" | "advanced";
+  duration_minutes: number;
+  score_overall?: number;
+  feedback_summary?: string;
+  actual_duration_seconds?: number;
+}
+
+export interface PaginatedHistoryResponse {
+  success: boolean;
+  interviews: InterviewHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface LiveKitTokenResponse {
@@ -105,6 +151,65 @@ export interface LiveKitTokenResponse {
  * Handles authentication, error handling, and response parsing.
  */
 export const interviewApi = {
+  /**
+   * Generate interview plan using AI
+   *
+   * Creates customized interview sections based on:
+   * - User's resume/profile
+   * - Target role and company
+   * - Complexity level
+   * - Job description (if provided)
+   */
+  async generatePlan(config: Omit<InterviewConfig, "sections">): Promise<GeneratePlanResponse> {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_URL}/api/interviews/plan`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(config),
+        signal: AbortSignal.timeout(30000), // 30 second timeout for AI generation
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("Failed to parse plan response:", parseError);
+        return {
+          success: false,
+          error: "PARSE_ERROR",
+          message: "Invalid response from server. Please try again.",
+        };
+      }
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || "UNKNOWN_ERROR",
+          message: data.message || "Failed to generate interview plan",
+        };
+      }
+
+      return data;
+    } catch (error: any) {
+      console.error("Plan generation error:", error);
+
+      if (error.name === "AbortError" || error.name === "TimeoutError") {
+        return {
+          success: false,
+          error: "TIMEOUT_ERROR",
+          message: "Plan generation timed out. Please try again.",
+        };
+      }
+
+      return {
+        success: false,
+        error: "NETWORK_ERROR",
+        message: error.message || "Network error. Please try again.",
+      };
+    }
+  },
+
   /**
    * Check if user is eligible to start an interview
    *
@@ -341,6 +446,87 @@ export const interviewApi = {
       throw error;
     }
   },
+
+  /**
+   * Get user's interview history
+   *
+   * Returns list of past interviews with scores and status
+   */
+  async getHistory(): Promise<InterviewHistoryItem[]> {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_URL}/api/interviews/history`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = await response.json();
+      return data.interviews || [];
+    } catch (error: any) {
+      console.error("Get history error:", error);
+      return [];
+    }
+  },
+
+  /**
+   * Get user's interview history with pagination
+   *
+   * @param page - Page number (1-indexed)
+   * @param limit - Items per page (max 50)
+   * @param status - Optional filter by status (completed, failed, timeout)
+   */
+  async getHistoryPaginated(
+    page: number = 1,
+    limit: number = 10,
+    status?: string
+  ): Promise<PaginatedHistoryResponse> {
+    try {
+      const headers = await getAuthHeaders();
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+      if (status) {
+        params.append("status", status);
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/interviews/history/paginated?${params}`,
+        {
+          method: "GET",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        return {
+          success: false,
+          interviews: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        };
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      console.error("Get paginated history error:", error);
+      return {
+        success: false,
+        interviews: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      };
+    }
+  },
 };
 
 /**
@@ -360,6 +546,14 @@ export function getErrorMessage(error: string): string {
     PARSE_ERROR: "Invalid server response. Please try again.",
     RATE_LIMIT: "Too many requests. Please wait a moment and try again.",
     UNKNOWN_ERROR: "An unexpected error occurred. Please try again.",
+    // Additional error codes from backend
+    DUPLICATE_ROOM: "Room conflict detected. Please try again.",
+    ROOM_GENERATION_FAILED: "Failed to generate interview room. Please try again.",
+    USER_FETCH_FAILED: "Failed to load your profile. Please try again.",
+    CREATE_FAILED: "Failed to create interview session. Please try again.",
+    USER_NOT_FOUND: "User profile not found. Please sign in again.",
+    AI_ERROR: "AI service is temporarily unavailable. Please try again later.",
+    AI_TIMEOUT: "AI request timed out. Please try again.",
   };
 
   return errorMessages[error] || errorMessages.UNKNOWN_ERROR;

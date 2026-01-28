@@ -35,6 +35,7 @@ export default function InterviewPage({ params }: InterviewPageProps) {
   const [token, setToken] = useState<string | null>(null);
   const [wsUrl, setWsUrl] = useState<string | null>(null);
   const [roomName, setRoomName] = useState<string | null>(null);
+  const [targetRole, setTargetRole] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +68,7 @@ export default function InterviewPage({ params }: InterviewPageProps) {
               token: storedToken,
               wsUrl: storedWsUrl,
               roomName: storedRoomName,
+              targetRole: storedTargetRole,
             } = JSON.parse(storedData);
 
             if (storedToken && storedWsUrl && storedRoomName) {
@@ -74,6 +76,7 @@ export default function InterviewPage({ params }: InterviewPageProps) {
               setToken(storedToken);
               setWsUrl(storedWsUrl);
               setRoomName(storedRoomName);
+              if (storedTargetRole) setTargetRole(storedTargetRole);
               setLoading(false);
               return;
             }
@@ -110,6 +113,10 @@ export default function InterviewPage({ params }: InterviewPageProps) {
         setToken(livekitData.token);
         setWsUrl(livekitData.wsUrl);
         setRoomName(livekitData.roomName);
+        // Extract target role from session
+        if (session.target_role) {
+          setTargetRole(session.target_role);
+        }
         setLoading(false);
       } catch (err: any) {
         console.error("Error setting up LiveKit:", err);
@@ -175,7 +182,8 @@ export default function InterviewPage({ params }: InterviewPageProps) {
       <InterviewExperience
         sessionId={sessionId}
         roomName={roomName || sessionId}
-        onEndCall={() => router.push("/dashboard")}
+        targetRole={targetRole}
+        onEndCall={() => router.push(`/interview/${sessionId}/results`)}
       />
     </LiveKitRoom>
   );
@@ -184,26 +192,29 @@ export default function InterviewPage({ params }: InterviewPageProps) {
 function InterviewExperience({
   sessionId,
   roomName,
+  targetRole,
   onEndCall,
 }: {
   sessionId: string;
   roomName: string;
+  targetRole?: string;
   onEndCall: () => void;
 }) {
   const [endingSession, setEndingSession] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   /**
-   * Handle end call
-   *
-   * Flow:
-   * 1. Call /end API to mark session as ended
-   * 2. Disconnect from LiveKit room
-   * 3. Navigate back to dashboard
+   * Handle end call with confirmation
    */
-  const handleEndCall = async () => {
+  const handleEndCallRequest = () => {
+    setShowEndConfirm(true);
+  };
+
+  const handleEndCallConfirm = async () => {
     if (endingSession) return;
 
     setEndingSession(true);
+    setShowEndConfirm(false);
 
     try {
       // End session via API
@@ -212,9 +223,13 @@ function InterviewExperience({
       console.error("Failed to end session:", error);
       // Continue anyway - user wants to leave
     } finally {
-      // Navigate back to dashboard
+      // Navigate to results page instead of dashboard
       onEndCall();
     }
+  };
+
+  const handleEndCallCancel = () => {
+    setShowEndConfirm(false);
   };
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
@@ -226,17 +241,83 @@ function InterviewExperience({
   const [settingsOpen, setSettingsOpen] = useState(false);
   type SubtitleEntry = { id: string; speaker: string; text: string };
   const [subtitles, setSubtitles] = useState<SubtitleEntry[]>([]);
+  
+  // Timer state for elapsed time (streamed from agent via data channel)
+  const [elapsedTime, setElapsedTime] = useState("00:00");
 
   const [micDevices, setMicDevices] = useState<MediaDeviceInfo[]>([]);
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [speakerDevices, setSpeakerDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string | undefined>();
-  const [selectedCameraId, setSelectedCameraId] = useState<
-    string | undefined
-  >();
-  const [selectedSpeakerId, setSelectedSpeakerId] = useState<
-    string | undefined
-  >();
+  const [selectedCameraId, setSelectedCameraId] = useState<string | undefined>();
+  const [selectedSpeakerId, setSelectedSpeakerId] = useState<string | undefined>();
+
+  // Check if agent is in the room
+  const agentInRoom = participants.some((p) => {
+    if (p.isLocal) return false;
+    return (
+      p.identity === "ai-interviewer" ||
+      p.identity?.toLowerCase().includes("agent") ||
+      (() => {
+        if (!p.metadata) return false;
+        try {
+          const meta = JSON.parse(p.metadata as string);
+          return meta?.kind === "ai-interview" || meta?.agent === true;
+        } catch {
+          return false;
+        }
+      })()
+    );
+  });
+
+  // Listen for room disconnection - when agent session ends, room is deleted and we get disconnected
+  // Agent-driven lifecycle: when agent finishes, it ends the session which deletes the room
+  useEffect(() => {
+    if (!room) return;
+
+    const handleDisconnected = () => {
+      console.log("[Interview] Room disconnected - agent session ended, redirecting to results");
+      onEndCall();
+    };
+
+    room.on("disconnected", handleDisconnected);
+
+    return () => {
+      room.off("disconnected", handleDisconnected);
+    };
+  }, [room, onEndCall]);
+
+  // Listen for elapsed time updates from agent via text stream
+  useEffect(() => {
+    if (!room) return;
+
+    const handleElapsedTimeStream = async (reader: any, participantInfo: any) => {
+      try {
+        const timeText = await reader.readAll();
+        if (timeText && /^\d{2}:\d{2}$/.test(timeText.trim())) {
+          setElapsedTime(timeText.trim());
+        }
+      } catch (err) {
+        console.error("[Interview] Error reading elapsed time stream:", err);
+      }
+    };
+
+    // Register handler for elapsed time text stream topic
+    try {
+      if (typeof (room as any).registerTextStreamHandler === "function") {
+        (room as any).registerTextStreamHandler("lk.elapsed_time", handleElapsedTimeStream);
+      }
+    } catch (err) {
+      console.error("[Interview] Error registering text stream handler:", err);
+    }
+
+    return () => {
+      // Unregister on cleanup
+      if (typeof (room as any).unregisterTextStreamHandler === "function") {
+        (room as any).unregisterTextStreamHandler("lk.elapsed_time");
+      }
+    };
+  }, [room]);
 
   // Load available media devices from LiveKit
   useEffect(() => {
@@ -270,7 +351,7 @@ function InterviewExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Subscribe to LiveKit transcription text streams and drive subtitles
+  // Subscribe to LiveKit transcription text streams and drive subtitles (streaming)
   useEffect(() => {
     if (!room) return;
 
@@ -279,83 +360,87 @@ function InterviewExperience({
       info: { identity?: string } | undefined
     ) => {
       try {
-        const message = await reader.readAll();
-        console.log("message", message);
         const attrs = reader.info?.attributes ?? {};
-        console.log("attrs", attrs);
         const isTranscription = !!attrs["lk.transcribed_track_id"];
         const hasSegmentId = !!attrs["lk.segment_id"];
-        // Some early or partial transcription events may not include
-        // lk.transcribed_track_id but will still carry lk.segment_id.
-        // Accept either so we don't drop the very first spoken line.
+        // Accept transcription or segment_id to not drop first line
         if (!isTranscription && !hasSegmentId) return;
 
         const senderIdentity = info?.identity;
         const trackSid = attrs["lk.transcribed_track_id"] as string | undefined;
         let label = "";
 
-        // Prefer matching by track ID to reliably detect the local candidate,
-        // regardless of how identities are mapped.
-        const localAudioPubs = ((localParticipant as any)?.audioTracks ??
-          []) as any[];
+        // Detect local participant by track ID
+        const localAudioPubs = ((localParticipant as any)?.audioTracks ?? []) as any[];
         const isLocalByTrack =
           !!trackSid && localAudioPubs.some((pub) => pub.trackSid === trackSid);
 
         if (isLocalByTrack) {
           label = "You";
         } else if (senderIdentity) {
-          const participant = participants.find(
-            (p) => p.identity === senderIdentity
-          );
+          const participant = participants.find((p) => p.identity === senderIdentity);
           if (participant) {
-            const baseName =
-              participant.name || participant.identity || "Guest";
+            const baseName = participant.name || participant.identity || "Guest";
             label = participant.isLocal ? "You" : baseName;
           }
         }
 
+        // Default label for agent
+        if (!label && !isLocalByTrack) {
+          label = "AI";
+        }
+
         const segmentId = (attrs["lk.segment_id"] as string | undefined) ?? "";
-        const id =
-          segmentId ||
-          `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const id = segmentId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-        const text =
-          typeof message === "string" ? message : String(message ?? "");
-        const trimmedText = text.trim();
+        // Stream text chunks as they arrive instead of waiting for completion
+        let accumulatedText = "";
+        
+        // Use streaming read for real-time captions
+        for await (const chunk of reader) {
+          const chunkText = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
+          accumulatedText += chunkText;
+          
+          // Update subtitles with each chunk for live streaming effect
+          setSubtitles((prev) => {
+            const baseLabel = label || "";
+            const existingIndex = segmentId ? prev.findIndex((s) => s.id === id) : -1;
 
-        setSubtitles((prev) => {
-          const baseLabel = label || "";
+            if (existingIndex !== -1) {
+              const next = [...prev];
+              next[existingIndex] = {
+                ...next[existingIndex],
+                speaker: baseLabel || next[existingIndex].speaker,
+                text: accumulatedText,
+              };
+              return next;
+            }
 
-          // If we already have an entry for this segment, update it instead of pushing a new one
-          const existingIndex = segmentId
-            ? prev.findIndex((s) => s.id === segmentId)
-            : -1;
+            // Skip empty text
+            if (!accumulatedText.trim().length) return prev;
 
-          if (existingIndex !== -1) {
-            const next = [...prev];
-            const current = next[existingIndex];
-            const hasNewText = trimmedText.length > 0;
-
-            next[existingIndex] = {
-              ...current,
-              speaker: baseLabel || current.speaker,
-              // Do not wipe out existing text if this update carries empty/whitespace text
-              text: hasNewText ? text : current.text,
-            };
-            return next;
-          }
-
-          // For new segments, skip completely empty/whitespace messages
-          if (!trimmedText.length) {
-            return prev;
-          }
-
-          const next = [...prev, { id, speaker: baseLabel, text }];
-          // keep a small rolling history; actual UI decides which lines to show
-          return next.slice(-20);
-        });
+            const next = [...prev, { id, speaker: baseLabel, text: accumulatedText }];
+            return next.slice(-20);
+          });
+        }
       } catch (err) {
-        console.error("Error handling transcription text stream", err);
+        // Fallback to readAll if streaming fails
+        try {
+          const message = await reader.readAll();
+          const attrs = reader.info?.attributes ?? {};
+          const segmentId = (attrs["lk.segment_id"] as string | undefined) ?? "";
+          const id = segmentId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          const text = typeof message === "string" ? message : String(message ?? "");
+          
+          if (text.trim()) {
+            setSubtitles((prev) => {
+              const next = [...prev, { id, speaker: "AI", text }];
+              return next.slice(-20);
+            });
+          }
+        } catch (fallbackErr) {
+          console.error("Error handling transcription", fallbackErr);
+        }
       }
     };
 
@@ -427,21 +512,23 @@ function InterviewExperience({
     }
   };
 
-  const tiles = participants.map((p) => {
+  // Build tiles from participants
+  const participantTiles = participants.map((p) => {
     const isLocal = p.isLocal;
     const isAi =
       p.identity === "ai-interviewer" ||
+      p.identity?.toLowerCase().includes("agent") ||
       (() => {
         if (!p.metadata) return false;
         try {
           const meta = JSON.parse(p.metadata as string);
-          return meta?.kind === "ai-interview";
+          return meta?.kind === "ai-interview" || meta?.agent === true;
         } catch {
           return false;
         }
       })();
 
-    const name = p.name || p.identity || (isLocal ? "You" : "Guest");
+    const name = p.name || p.identity || (isLocal ? "You" : isAi ? "AI Interviewer" : "Guest");
 
     const audioPubs = ((p as any).audioTracks ?? []) as any[];
     const videoPubs = ((p as any).videoTracks ?? []) as any[];
@@ -463,11 +550,15 @@ function InterviewExperience({
     };
   });
 
+  // Only show tiles for actual participants (no placeholder)
+  const tiles = participantTiles;
+
   return (
+    <>
     <InterviewLayout
       roomLabel={roomName}
-      roundLabel="Round 2: Technical"
-      elapsedTime={"04:22"}
+      roundLabel={targetRole ? `${targetRole} Interview` : "AI Practice Interview"}
+      elapsedTime={elapsedTime}
       tiles={tiles}
       micOn={micOn}
       camOn={camOn}
@@ -479,7 +570,6 @@ function InterviewExperience({
       onToggleCc={() => setCcOn((prev) => !prev)}
       onOpenSettings={() => setSettingsOpen(true)}
       onCloseSettings={() => setSettingsOpen(false)}
-      onEndCall={handleEndCall}
       micDevices={micDevices.map((d) => ({
         id: d.deviceId,
         label: d.label || "Microphone",
@@ -498,7 +588,13 @@ function InterviewExperience({
       onSelectMicDevice={handleMicDeviceChange}
       onSelectCameraDevice={handleCameraDeviceChange}
       onSelectSpeakerDevice={handleSpeakerDeviceChange}
+      onEndCall={handleEndCallRequest}
+      showEndConfirmDialog={showEndConfirm}
+      onEndConfirm={handleEndCallConfirm}
+      onEndCancel={handleEndCallCancel}
+      endingSession={endingSession}
     />
+    </>
   );
 }
 
