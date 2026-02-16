@@ -27,14 +27,14 @@ const symbolSizeMap = {
 };
 
 const LOGO_SOURCES = {
-  'symbol': '/logos/panelroom-symbol.svg',
-  'lockup-light': '/logos/panelroom-lockup-light.svg',
-  'lockup-dark': '/logos/panelroom-lockup-dark.svg',
-  'app-icon': '/logos/panelroom-app-icon.svg',
+  'symbol': '/logos/PrepX-symbol.svg',
+  'lockup-light': '/logos/PrepX-lockup-light.svg',
+  'lockup-dark': '/logos/PrepX-lockup-dark.svg',
+  'app-icon': '/logos/PrepX-app-icon.svg',
 };
 
 /**
- * Panelroom Logo Component
+ * PrepX Logo Component
  * 
  * @example
  * // Icon variant
@@ -50,7 +50,7 @@ export function Logo({
   variant = 'symbol',
   size = 'md',
   className = '',
-  alt = 'Panelroom',
+  alt = 'PrepX',
 }: LogoProps) {
   // Use square sizes for symbol/app-icon, use height-based sizing for lockups
   const isSquareVariant = variant === 'symbol' || variant === 'app-icon';
@@ -84,7 +84,7 @@ export function LogoLockupLight({ size = 'lg', className = '' }: Omit<LogoProps,
       xmlns="http://www.w3.org/2000/svg"
       className={`${sizeClass} w-auto object-contain text-foreground ${className}`}
       role="img"
-      aria-label="Panelroom"
+      aria-label="PrepX"
     >
       <defs>
         <linearGradient id="magmaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -107,7 +107,7 @@ export function LogoLockupLight({ size = 'lg', className = '' }: Omit<LogoProps,
         letterSpacing="-1.2"
         style={{ fontFamily: 'var(--font-custom, Circular, custom-font, "Helvetica Neue", Helvetica, Arial, sans-serif)' }}
       >
-        Panelroom
+        PrepX
       </text>
     </svg>
   );
@@ -125,7 +125,7 @@ export function LogoLockupDark({ size = 'lg', className = '' }: Omit<LogoProps, 
       xmlns="http://www.w3.org/2000/svg"
       className={`${sizeClass} w-auto object-contain text-foreground ${className}`}
       role="img"
-      aria-label="Panelroom"
+      aria-label="PrepX"
     >
       <defs>
         <linearGradient id="magmaGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -148,7 +148,7 @@ export function LogoLockupDark({ size = 'lg', className = '' }: Omit<LogoProps, 
         letterSpacing="-1.2"
         style={{ fontFamily: 'var(--font-custom, Circular, custom-font, "Helvetica Neue", Helvetica, Arial, sans-serif)' }}
       >
-        Panelroom
+        PrepX
       </text>
     </svg>
   );

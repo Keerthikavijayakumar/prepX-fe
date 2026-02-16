@@ -43,7 +43,7 @@ const HeroIllustration = dynamic(() =>
   }
 );
 
-// Pricing plans - Simple Freemium Model (Beta)
+// Pricing plans - Simple Freemium Model
 const pricingPlans = [
   {
     name: "Free",
@@ -52,7 +52,7 @@ const pricingPlans = [
     priceNote: "forever",
     minutes: "60 min/month",
     normalMinutes: "15 min/month",
-    limitedTimeOffer: true,
+    limitedTimeOffer: false,
     highlighted: false,
     features: [
       "2 full mock interviews per month (30 min each)",
@@ -63,12 +63,12 @@ const pricingPlans = [
       "Join our community of engineers",
     ],
     cta: "Get Started Free",
-    badge: "Limited Time: 60 min",
+    badge: "",
     disabled: false,
   },
   {
     name: "Pro",
-    description: "Unlimited interview practice (Coming Soon)",
+    description: "Unlimited interview practice",
     price: "$19",
     priceNote: "/month",
     minutes: "300 min/month",
@@ -79,10 +79,10 @@ const pricingPlans = [
       "Full FAANG + startup question library",
       "Export transcripts & detailed reports",
       "Advanced analytics & progress tracking",
-      "Priority email support (coming in Beta 2)",
+      "Priority email support",
     ],
     cta: "Join Waitlist",
-    badge: "Beta Limited",
+    badge: "",
     disabled: true,
   },
 ];
@@ -114,7 +114,7 @@ const features = [
     icon: Target,
     title: "Role-Specific Prep",
     description:
-      "Paste any job description and Panelroom generates targeted questions matching the exact skills and experience required.",
+      "Paste any job description and PrepX generates targeted questions matching the exact skills and experience required.",
     gradient: "from-orange-500 to-red-500",
   },
   {
@@ -140,7 +140,7 @@ const steps = [
     icon: Upload,
     title: "Upload Your Resume",
     description:
-      "Panelroom's AI analyzes your experience, skills, and projects to create a personalized interview experience.",
+      "PrepX's AI analyzes your experience, skills, and projects to create a personalized interview experience.",
   },
   {
     step: "02",
@@ -188,13 +188,13 @@ export default function Home() {
   }
 
   function handleContactSales() {
-    window.location.href = "mailto:sales@panelroom.io?subject=Enterprise%20Inquiry";
+    window.location.href = "mailto:sales@PrepX.io?subject=Enterprise%20Inquiry";
   }
 
   async function handleJoinWaitlist(e: React.FormEvent) {
     e.preventDefault();
     if (!waitlistEmail || !waitlistName) return;
-    
+
     setWaitlistLoading(true);
     try {
       // Save to Supabase waitlist table
@@ -226,7 +226,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground" style={{ backgroundImage: "url('/back.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
       {/* Subtle background */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:48px_48px]" />
@@ -242,7 +242,7 @@ export default function Home() {
             <div>
               <Badge className="border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                Now in Public Beta
+                AI-Powered Interview Prep
               </Badge>
             </div>
 
@@ -328,19 +328,19 @@ export default function Home() {
       >
         {/* Decorative thermal orb */}
         <div className="thermal-orb thermal-orb-top-left" />
-        
+
         <div className="mx-auto max-w-6xl px-6">
           <div className="space-y-12">
             {/* Section header */}
             <div className="text-center space-y-5">
               <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-1.5">
-                Why Panelroom
+                Why PrepX
               </Badge>
               <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
                 Everything you need to succeed
               </h2>
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
-                Built by engineers who&apos;ve been through hundreds of tech interviews. 
+                Built by engineers who&apos;ve been through hundreds of tech interviews.
                 Every feature is designed to help you perform your best when it matters.
               </p>
             </div>
@@ -379,7 +379,7 @@ export default function Home() {
       >
         {/* Grid background layer */}
         <div className="grid-layer opacity-20" />
-        
+
         <div className="mx-auto max-w-6xl px-6">
           <div className="space-y-12">
             {/* Section header */}
@@ -435,22 +435,22 @@ export default function Home() {
       >
         {/* Decorative thermal orb */}
         <div className="thermal-orb thermal-orb-bottom-right" />
-        
+
         <div className="mx-auto max-w-6xl px-6">
           <div className="space-y-12">
             {/* Section header */}
             <div className="text-center space-y-5">
               <Badge
                 variant="outline"
-                className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest font-semibold px-4 py-1.5"
+                className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs uppercase tracking-widest font-semibold px-4 py-1.5"
               >
-                🎯 Beta Launch - Limited Access
+                Pricing
               </Badge>
               <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
                 Interview prep designed for serious learners
               </h2>
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
-                Free forever tier available now. Pro features coming in Beta Phase 2. Start practicing with unlimited AI feedback today.
+                Free forever tier available. Start practicing with unlimited AI feedback today.
               </p>
             </div>
 
@@ -459,19 +459,14 @@ export default function Home() {
               {pricingPlans.map((plan, i) => (
                 <div key={i}>
                   <Card
-                    className={`relative h-full flex flex-col rounded-2xl transition-all duration-500 ${
-                      plan.highlighted
-                        ? "card-magma-accent shadow-2xl scale-[1.05] hover:scale-[1.06]"
-                        : "card-glass hover:shadow-xl hover:-translate-y-1"
-                    } ${plan.disabled ? "opacity-75" : ""}`}
+                    className={`relative h-full flex flex-col rounded-2xl transition-all duration-500 ${plan.highlighted
+                      ? "card-magma-accent shadow-2xl scale-[1.05] hover:scale-[1.06]"
+                      : "card-glass hover:shadow-xl hover:-translate-y-1"
+                      } ${plan.disabled ? "opacity-75" : ""}`}
                   >
                     {plan.badge && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className={`${
-                          plan.badge === "Beta Limited"
-                            ? "bg-amber-500 text-amber-950"
-                            : "bg-primary text-primary-foreground"
-                        } px-3 py-1`}>
+                        <Badge className="bg-primary text-primary-foreground px-3 py-1">
                           {plan.badge}
                         </Badge>
                       </div>
@@ -527,10 +522,8 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Beta notice */}
             <div className="text-center text-sm text-muted-foreground">
               <p>
-                🚀 <span className="text-amber-600 dark:text-amber-400 font-medium">Beta Phase 1:</span> Free tier is fully functional. Pro tier opens in Beta Phase 2.{' '}
                 <span className="text-foreground font-medium">
                   No credit card required.
                 </span>
@@ -545,9 +538,9 @@ export default function Home() {
         <div className="thermal-orb thermal-orb-top-left opacity-50" />
         <div className="mx-auto max-w-4xl px-6 text-center">
           <div className="card-glass p-12 lg:p-16 rounded-3xl space-y-8">
-            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 px-4 py-1.5">
+            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-4 py-1.5">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-              Now in Beta - Join 1,000+ Engineers
+              Join 1,000+ Engineers
             </Badge>
             <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               Start your interview prep journey.
@@ -555,7 +548,7 @@ export default function Home() {
               <span className="magma-text">Get real feedback, not generic tips.</span>
             </h2>
             <p className="mx-auto max-w-2xl text-xl text-muted-foreground/80 leading-relaxed">
-              Join our beta and get 2 free mock interviews per month. Unlimited AI feedback on every response. No credit card required, cancel anytime.
+              Get 2 free mock interviews per month. Unlimited AI feedback on every response. No credit card required.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
               <Button
@@ -564,12 +557,12 @@ export default function Home() {
                 disabled={startLoading}
                 className="btn-magma group h-16 px-12 text-xl font-semibold rounded-xl shadow-2xl"
               >
-                Get Started (Beta)
+                Get Started Free
                 <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-1" />
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Free forever • Beta Phase 1 • No credit card needed • Give us feedback
+              Free forever • No credit card needed
             </p>
           </div>
         </div>
@@ -580,7 +573,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Panelroom. All rights reserved.
+              &copy; {new Date().getFullYear()} PrepX. All rights reserved.
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="/privacy-policy" className="hover:text-foreground transition-colors">
@@ -590,7 +583,7 @@ export default function Home() {
                 Terms of Service
               </a>
               <a
-                href="mailto:support@panelroom.io"
+                href="mailto:support@PrepX.io"
                 className="hover:text-foreground transition-colors"
               >
                 Contact
@@ -611,7 +604,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold">Welcome to the Waitlist!</h3>
                 <p className="text-muted-foreground">
-                  We'll notify you via email when Pro tier becomes available in Beta Phase 2.
+                  We'll notify you via email when Pro tier becomes available.
                 </p>
               </div>
             ) : (

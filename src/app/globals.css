@@ -64,31 +64,33 @@
 :root {
   --radius: 0.65rem;
 
-  /* Supernova Design System - Magma Spectrum */
-  --magma-1: #FF8A00;
-  --magma-2: #B30042;
-  --magma-3: #7A00FF;
-  --magma-gradient: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3));
-  --magma-gradient-reverse: linear-gradient(315deg, var(--magma-1), var(--magma-2), var(--magma-3));
-  --magma-gradient-radial: radial-gradient(circle, var(--magma-1), var(--magma-2), var(--magma-3));
+  /* ═══════════════════════════════════════════════════
+     NEON AI DESIGN SYSTEM — Emerald Pulse
+     ═══════════════════════════════════════════════════ */
+  --neon-1: #00FF88;       /* Primary neon green */
+  --neon-2: #00D4AA;       /* Teal accent */
+  --neon-3: #00B4D8;       /* Electric blue */
+  --neon-gradient: linear-gradient(135deg, var(--neon-1), var(--neon-2), var(--neon-3));
+  --neon-gradient-reverse: linear-gradient(315deg, var(--neon-1), var(--neon-2), var(--neon-3));
+  --neon-gradient-radial: radial-gradient(circle, var(--neon-1), var(--neon-2), var(--neon-3));
   
-  /* Magma Variants */
-  --magma-1-light: rgba(255, 138, 0, 0.1);
-  --magma-2-light: rgba(255, 0, 92, 0.1);
-  --magma-3-light: rgba(122, 0, 255, 0.1);
+  /* Neon Variants */
+  --neon-1-light: rgba(0, 255, 136, 0.08);
+  --neon-2-light: rgba(0, 212, 170, 0.08);
+  --neon-3-light: rgba(0, 180, 216, 0.08);
 
   /* Light Mode Tokens */
-  --background: #FDFDFF;
+  --background: #FAFBFC;
   --foreground: #050505;
   --surface-light: rgba(0, 0, 0, 0.02);
   --border-light: rgba(0, 0, 0, 0.06);
   --grid-color: rgba(0, 0, 0, 0.03);
 
-  /* PRIMARY (logo) - Updated to use Magma-2 */
-  --primary: var(--magma-2);
-  --primary-foreground: #FDFDFF;
+  /* PRIMARY - Neon Green */
+  --primary: #059669;
+  --primary-foreground: #FFFFFF;
 
-  --action-secondary: var(--magma-2);
+  --action-secondary: var(--neon-2);
   --border-color: var(--border-light);
 
   --card: #ffffff;
@@ -97,145 +99,103 @@
   --popover: #ffffff;
   --popover-foreground: #050505;
 
-  --secondary: #EEF2FF;
+  --secondary: #ECFDF5;
   --secondary-foreground: #050505;
 
-  --muted: #F8FAFC;
+  --muted: #F0FDF4;
   --muted-foreground: #64748B;
 
-  --accent: var(--magma-1-light);
+  --accent: var(--neon-1-light);
   --accent-foreground: #050505;
 
   --destructive: #cc1122;
 
   --border: var(--border-color);
   --input: var(--border-color);
-  --ring: var(--magma-2);
+  --ring: #059669;
 
   --chart-1: #050505;
-  --chart-2: #334155;
-  --chart-3: #64748B;
-  --chart-4: #94A3B8;
-  --chart-5: #CBD5E1;
+  --chart-2: #065F46;
+  --chart-3: #059669;
+  --chart-4: #34D399;
+  --chart-5: #6EE7B7;
 
-  --sidebar:#F8FAFC;
-  --sidebar-foreground:#050505;
-  --sidebar-primary:#050505;
-  --sidebar-primary-foreground:#FDFDFF;
-  --sidebar-accent:#F1F5F9;
-  --sidebar-accent-foreground:#050505;
+  --sidebar: #F0FDF4;
+  --sidebar-foreground: #050505;
+  --sidebar-primary: #050505;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #ECFDF5;
+  --sidebar-accent-foreground: #050505;
   --sidebar-border: var(--border-color);
   --sidebar-ring: var(--primary);
 }
 
-/* .dark {
-  --primary:#818CF8;
-  --primary-foreground:white;
-
-  --background:#001521;
-  --foreground:#e7eef5;
-
-  --card:#002235;
-  --card-foreground:white;
-
-  --popover:#002235;
-  --popover-foreground:white;
-
-  --secondary:#003e62;
-  --secondary-foreground:white;
-
-  --muted:#003e62;
-  --muted-foreground:#b5cce0;
-
-  --accent:#003e62;
-  --accent-foreground:white;
-
-  --destructive:#b91c1c;
-
-  --border:#00314a;
-  --input:#00314a;
-  --ring:#66bfea;
-
-  --chart-1:#66bfea;
-  --chart-2:#3ea3cf;
-  --chart-3:#0077B5;
-  --chart-4:#005a8b;
-  --chart-5:#003e62;
-
-  --sidebar:#001a29;
-  --sidebar-foreground:#e7eef5;
-  --sidebar-primary:#0077B5;
-  --sidebar-primary-foreground:white;
-  --sidebar-accent:#00314a;
-  --sidebar-accent-foreground:white;
-  --sidebar-border:#00314a;
-  --sidebar-ring:#66bfea;
-} */
-
 .dark {
-  /* Supernova Design System - Magma Spectrum (Enhanced for Dark Mode) */
-  --magma-1: #FFB347;
-  --magma-2: #CC1459;
-  --magma-3: #9D4EFF;
-  --magma-gradient: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3));
-  --magma-gradient-reverse: linear-gradient(315deg, var(--magma-1), var(--magma-2), var(--magma-3));
-  --magma-gradient-radial: radial-gradient(circle, var(--magma-1), var(--magma-2), var(--magma-3));
+  /* ═══════════════════════════════════════════════════
+     DARK MODE — Deep Charcoal + Neon Pulse
+     ═══════════════════════════════════════════════════ */
+  --neon-1: #00FF88;       /* Neon green - vivid */
+  --neon-2: #00E5A0;       /* Teal - brighter for dark */
+  --neon-3: #00C4E0;       /* Electric blue - brighter */
+  --neon-gradient: linear-gradient(135deg, var(--neon-1), var(--neon-2), var(--neon-3));
+  --neon-gradient-reverse: linear-gradient(315deg, var(--neon-1), var(--neon-2), var(--neon-3));
+  --neon-gradient-radial: radial-gradient(circle, var(--neon-1), var(--neon-2), var(--neon-3));
   
-  /* Magma Variants for Dark Mode */
-  --magma-1-light: rgba(255, 179, 71, 0.15);
-  --magma-2-light: rgba(255, 26, 117, 0.15);
-  --magma-3-light: rgba(157, 78, 255, 0.15);
+  /* Neon Variants for Dark */
+  --neon-1-light: rgba(0, 255, 136, 0.12);
+  --neon-2-light: rgba(0, 229, 160, 0.10);
+  --neon-3-light: rgba(0, 196, 224, 0.08);
 
-  /* Dark Mode Tokens */
-  --background: #050505;
-  --foreground: #ffffff;
-  --surface-dark: rgba(255, 255, 255, 0.03);
-  --border-dark: rgba(255, 255, 255, 0.08);
-  --grid-color: rgba(255, 255, 255, 0.03);
+  /* Dark Mode Surface Tokens */
+  --background: #030712;
+  --foreground: #F0FDF4;
+  --surface-dark: rgba(0, 255, 136, 0.02);
+  --border-dark: rgba(0, 255, 136, 0.08);
+  --grid-color: rgba(0, 255, 136, 0.03);
 
-  --primary: var(--magma-2);
-  --primary-foreground: #ffffff;
+  --primary: #00FF88;
+  --primary-foreground: #030712;
 
-  --action-secondary: var(--magma-2);
+  --action-secondary: var(--neon-2);
   --border-color: var(--border-dark);
 
-  --card: #0F172A;
-  --card-foreground: #E5E7EB;
+  --card: #0A0F1A;
+  --card-foreground: #E2E8F0;
 
-  --popover: #0F172A;
-  --popover-foreground: #E5E7EB;
+  --popover: #0A0F1A;
+  --popover-foreground: #E2E8F0;
 
-  --secondary: #111827;
-  --secondary-foreground: #E5E7EB;
+  --secondary: #0D1117;
+  --secondary-foreground: #E2E8F0;
 
-  --muted: #111827;
+  --muted: #0D1117;
   --muted-foreground: #94A3B8;
 
-  --accent: var(--magma-3-light);
-  --accent-foreground: #E5E7EB;
+  --accent: var(--neon-1-light);
+  --accent-foreground: #E2E8F0;
 
-  --destructive: #b91c1c;
+  --destructive: #ef4444;
 
   --border: var(--border-color);
   --input: var(--border-color);
-  --ring: var(--magma-2);
+  --ring: #00FF88;
 
-  /* CHARTS */
-  --chart-1: #ffffff;
-  --chart-2: #A78BFA;
-  --chart-3: #6366F1;
-  --chart-4: #8B5CF6;
-  --chart-5: #C4B5FD;
+  /* Charts - Neon Spectrum */
+  --chart-1: #00FF88;
+  --chart-2: #00E5A0;
+  --chart-3: #00C4E0;
+  --chart-4: #34D399;
+  --chart-5: #6EE7B7;
 
-  /* SIDEBAR */
-  --sidebar: #0d1117;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #050505;
-  --sidebar-accent: #111827;
-  --sidebar-accent-foreground: #E5E7EB;
+  /* Sidebar */
+  --sidebar: #050A12;
+  --sidebar-foreground: #F0FDF4;
+  --sidebar-primary: #00FF88;
+  --sidebar-primary-foreground: #030712;
+  --sidebar-accent: #0D1117;
+  --sidebar-accent-foreground: #E2E8F0;
   --sidebar-border: var(--border-color);
-  --sidebar-ring: var(--magma-2);
+  --sidebar-ring: #00FF88;
 }
 
 @layer base {
@@ -250,29 +210,33 @@
     overflow-x: hidden;
   }
   
-  /* Supernova Grid Layer - Minimal geometric background */
+  /* AI Grid Pattern — Subtle circuit-style dot matrix */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background-image: radial-gradient(var(--grid-color) 1.5px, transparent 1.5px);
-    background-size: 32px 32px;
+    background-image: 
+      radial-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 32px 32px, 128px 128px, 128px 128px;
     pointer-events: none;
     z-index: 0;
   }
   
-  /* Thermal Orb System - Dynamic radial glows */
+  /* Neon Glow System — Floating radial ambient lighting */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 20% 50%, var(--magma-2) / 2%, transparent 50%),
-      radial-gradient(circle at 80% 80%, var(--magma-1) / 1.5%, transparent 50%);
-    background-size: 100% 100%;
+      radial-gradient(ellipse 600px 400px at 15% 30%, rgba(0, 255, 136, 0.04), transparent 70%),
+      radial-gradient(ellipse 500px 500px at 85% 70%, rgba(0, 196, 224, 0.03), transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(0, 229, 160, 0.02), transparent 70%);
     pointer-events: none;
-    opacity: 0.4;
+    opacity: 1;
     z-index: 0;
+    animation: neon-drift 20s ease-in-out infinite alternate;
   }
   
   /* Ensure content stays above background layers */
@@ -283,7 +247,7 @@
 }
 
 @layer utilities {
-  /* CSS Containment for better CLS - prevents layout shifts */
+  /* CSS Containment for better CLS */
   .contain-layout {
     contain: layout style;
   }
@@ -296,36 +260,37 @@
     contain: content;
   }
 
-  /* ===== SUPERNOVA GRADIENT UTILITIES ===== */
+  /* ===== NEON AI GRADIENT UTILITIES ===== */
   
-  /* Standard 135deg Linear Flow (Primary) */
+  /* Standard 135deg Linear Flow */
   .magma-gradient {
-    background: var(--magma-gradient);
+    background: var(--neon-gradient);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  /* Reverse 315deg Linear Flow (Counter-flow for interactions) */
+  /* Reverse 315deg Linear Flow */
   .magma-gradient-reverse {
-    background: var(--magma-gradient-reverse);
+    background: var(--neon-gradient-reverse);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  /* Radial Convergence (Centric Flow - for thermal effects) */
+  /* Radial Convergence */
   .magma-gradient-radial {
-    background: var(--magma-gradient-radial);
+    background: var(--neon-gradient-radial);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  /* Thermal Orb - Large diffused radial glow */
+  /* Neon Orb — Large diffused radial glow */
   .thermal-orb {
     position: absolute;
     width: 45vw;
     height: 45vw;
-    background: var(--magma-gradient-radial);
-    filter: blur(140px);
-    opacity: 0.06;
+    background: var(--neon-gradient-radial);
+    filter: blur(160px);
+    opacity: 0.05;
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: neon-breathe 10s ease-in-out infinite;
   }
   
   .thermal-orb-top-left {
@@ -342,15 +307,15 @@
   .grid-layer {
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
     background-size: 32px 32px;
     pointer-events: none;
     opacity: var(--grid-opacity, 0.03);
   }
   
-  /* Gradient Text - Supernova branding */
+  /* Gradient Text — Neon AI branding */
   .magma-text {
-    background: var(--magma-gradient);
+    background: var(--neon-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -358,144 +323,128 @@
   }
   
   .magma-text-animated {
-    background: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3), var(--magma-1));
+    background: linear-gradient(135deg, var(--neon-1), var(--neon-2), var(--neon-3), var(--neon-1));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     background-size: 200% 200%;
-    animation: magma-shift 8s ease infinite;
+    animation: neon-shift 6s ease infinite;
   }
   
   .magma-border {
-    border-image: var(--magma-gradient) 1;
+    border-image: var(--neon-gradient) 1;
   }
   
   .magma-shadow {
-    box-shadow: 0 4px 20px rgba(255, 0, 92, 0.3), 0 8px 40px rgba(122, 0, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15), 0 8px 40px rgba(0, 180, 216, 0.10);
   }
   
   .magma-glow {
     box-shadow: 
-      0 0 20px rgba(255, 138, 0, 0.4),
-      0 0 40px rgba(255, 0, 92, 0.3),
-      0 0 60px rgba(122, 0, 255, 0.2);
+      0 0 20px rgba(0, 255, 136, 0.25),
+      0 0 40px rgba(0, 212, 170, 0.15),
+      0 0 60px rgba(0, 180, 216, 0.10);
   }
   
-  /* ===== SUPERNOVA BUTTON STYLES ===== */
+  /* ===== NEON AI BUTTON STYLES ===== */
   
-  /* Primary Magma Button */
+  /* Primary Neon Button — Pill shape with glow */
   .btn-magma {
-    background: var(--magma-gradient);
-    color: white;
+    background: var(--neon-gradient);
+    color: #030712;
     border: none;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 9999px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
+    font-weight: 600;
   }
   
   .btn-magma:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(255, 0, 92, 0.4), 0 12px 50px rgba(122, 0, 255, 0.3);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+      0 0 20px rgba(0, 255, 136, 0.4),
+      0 8px 30px rgba(0, 255, 136, 0.25),
+      0 16px 60px rgba(0, 212, 170, 0.15);
   }
   
-  /* Reverse gradient on hover (counter-flow interaction) */
+  .btn-magma:active {
+    transform: translateY(0) scale(0.98);
+  }
+  
+  /* Reverse gradient on hover */
   .btn-magma-reverse {
-    background: var(--magma-gradient);
-    color: white;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--neon-gradient);
+    color: #030712;
+    border-radius: 9999px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .btn-magma-reverse:hover {
-    background: var(--magma-gradient-reverse);
-    transform: translateY(-2px);
+    background: var(--neon-gradient-reverse);
+    transform: translateY(-2px) scale(1.02);
   }
   
-  /* Glassmorphic button with magma accent */
+  /* Glassmorphic button with neon accent */
   .btn-glass-magma {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(0, 255, 136, 0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    border-radius: 9999px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--foreground);
   }
   
   .btn-glass-magma:hover {
-    background: var(--magma-gradient);
-    border-color: transparent;
-    transform: translateY(-2px);
+    background: rgba(0, 255, 136, 0.10);
+    border-color: rgba(0, 255, 136, 0.35);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
   }
   
-  /* Magma Accent Background */
-  .bg-magma-1 {
-    background-color: var(--magma-1);
-  }
+  /* Neon Background Accents */
+  .bg-magma-1 { background-color: var(--neon-1); }
+  .bg-magma-2 { background-color: var(--neon-2); }
+  .bg-magma-3 { background-color: var(--neon-3); }
+  .bg-magma-1-light { background-color: var(--neon-1-light); }
+  .bg-magma-2-light { background-color: var(--neon-2-light); }
+  .bg-magma-3-light { background-color: var(--neon-3-light); }
   
-  .bg-magma-2 {
-    background-color: var(--magma-2);
-  }
+  /* Neon Text Colors */
+  .text-magma-1 { color: var(--neon-1); }
+  .text-magma-2 { color: var(--neon-2); }
+  .text-magma-3 { color: var(--neon-3); }
   
-  .bg-magma-3 {
-    background-color: var(--magma-3);
-  }
+  /* Neon Border Colors */
+  .border-magma-1 { border-color: var(--neon-1); }
+  .border-magma-2 { border-color: var(--neon-2); }
+  .border-magma-3 { border-color: var(--neon-3); }
   
-  .bg-magma-1-light {
-    background-color: var(--magma-1-light);
-  }
+  /* ===== NEON AI CARD STYLES ===== */
   
-  .bg-magma-2-light {
-    background-color: var(--magma-2-light);
-  }
-  
-  .bg-magma-3-light {
-    background-color: var(--magma-3-light);
-  }
-  
-  /* Magma Text Colors */
-  .text-magma-1 {
-    color: var(--magma-1);
-  }
-  
-  .text-magma-2 {
-    color: var(--magma-2);
-  }
-  
-  .text-magma-3 {
-    color: var(--magma-3);
-  }
-  
-  /* Magma Border Colors */
-  .border-magma-1 {
-    border-color: var(--magma-1);
-  }
-  
-  .border-magma-2 {
-    border-color: var(--magma-2);
-  }
-  
-  .border-magma-3 {
-    border-color: var(--magma-3);
-  }
-  
-  /* ===== SUPERNOVA CARD STYLES ===== */
-  
-  /* Standard Magma Card */
+  /* Standard Neon Card — Glassmorphism */
   .card-magma {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 255, 136, 0.02);
+    backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(0, 255, 136, 0.06);
+    border-radius: 20px;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .card-magma:hover {
-    border-color: rgba(255, 138, 0, 0.5);
-    box-shadow: 0 8px 32px rgba(255, 138, 0, 0.15);
+    border-color: rgba(0, 255, 136, 0.25);
+    box-shadow: 
+      0 0 20px rgba(0, 255, 136, 0.08),
+      0 8px 32px rgba(0, 255, 136, 0.06);
     transform: translateY(-4px);
   }
   
-  /* Magma Accent Card with gradient border */
+  /* Neon Accent Card with gradient border reveal */
   .card-magma-accent {
     position: relative;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
+    background: rgba(0, 255, 136, 0.02);
+    backdrop-filter: blur(16px) saturate(150%);
+    border-radius: 20px;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
@@ -505,7 +454,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: var(--magma-gradient);
+    background: var(--neon-gradient);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -519,25 +468,41 @@
   
   .card-magma-accent:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(255, 0, 92, 0.2);
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 0.10),
+      0 12px 40px rgba(0, 255, 136, 0.08);
   }
   
-  /* Glassmorphic Card */
+  /* Glassmorphic Card — Premium frosted glass */
   .card-glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(10, 15, 26, 0.60);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 255, 136, 0.08);
+    border-radius: 20px;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .card-glass:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(10, 15, 26, 0.70);
+    border-color: rgba(0, 255, 136, 0.15);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.05);
   }
   
-  /* ===== SUPERNOVA ANIMATION SYSTEM ===== */
+  /* ===== NEON AI ANIMATION SYSTEM ===== */
   
-  /* Thermal Breathing Effect - Subtle pulsing glow */
+  /* Neon Breathing — Subtle pulsing ambient glow */
+  @keyframes neon-breathe {
+    0%, 100% {
+      opacity: 0.03;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.07;
+      transform: scale(1.08);
+    }
+  }
+  
+  /* Keep old name for backward compat */
   @keyframes thermal-breathe {
     0%, 100% {
       opacity: 0.03;
@@ -550,40 +515,57 @@
   }
   
   .thermal-breathe {
-    animation: thermal-breathe 8s ease-in-out infinite;
+    animation: neon-breathe 10s ease-in-out infinite;
   }
   
-  /* Magma Pulse - Radial expansion effect */
+  /* Neon Pulse — Radial expansion ring */
   @keyframes magma-pulse {
     0%, 100% {
-      box-shadow: 0 0 0 0 rgba(255, 0, 92, 0.4);
+      box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.3);
     }
     50% {
-      box-shadow: 0 0 20px 10px rgba(255, 0, 92, 0);
+      box-shadow: 0 0 20px 10px rgba(0, 255, 136, 0);
     }
   }
   
   .magma-pulse {
-    animation: magma-pulse 2s ease-in-out infinite;
+    animation: magma-pulse 2.5s ease-in-out infinite;
   }
   
-  /* Animated Magma Gradient */
+  /* Animated Neon Gradient Shift */
+  @keyframes neon-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Keep old name */
   @keyframes magma-shift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
   .magma-animated {
-    background: linear-gradient(135deg, var(--magma-1), var(--magma-2), var(--magma-3), var(--magma-1));
+    background: linear-gradient(135deg, var(--neon-1), var(--neon-2), var(--neon-3), var(--neon-1));
     background-size: 200% 200%;
-    animation: magma-shift 8s ease infinite;
+    animation: neon-shift 6s ease infinite;
+  }
+
+  /* Floating Ambient Drift — Slow background animation */
+  @keyframes neon-drift {
+    0% {
+      background-position: 0% 0%;
+      opacity: 0.8;
+    }
+    50% {
+      background-position: 100% 100%;
+      opacity: 1;
+    }
+    100% {
+      background-position: 0% 0%;
+      opacity: 0.8;
+    }
   }
 
   @keyframes ripple {

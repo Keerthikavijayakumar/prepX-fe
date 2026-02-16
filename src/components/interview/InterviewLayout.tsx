@@ -302,14 +302,14 @@ export function InterviewLayout({
             <div className="relative h-7 w-7">
               <Image
                 src="/brand/icon-final.svg"
-                alt="Panelroom"
+                alt="PrepX"
                 fill
                 className="object-contain"
                 priority
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold text-foreground">Panelroom</h1>
+              <h1 className="text-sm font-semibold text-foreground">PrepX</h1>
             </div>
             <div className="h-4 w-px bg-border hidden sm:block" />
             <span className="text-xs text-muted-foreground hidden sm:block">{roundLabel}</span>

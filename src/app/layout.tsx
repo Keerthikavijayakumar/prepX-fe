@@ -37,11 +37,11 @@ const sourceCodePro = localFont({
 // SEO Metadata
 export const metadata: Metadata = {
   title: {
-    default: "Panelroom | AI Mock Interviews for Software Engineers",
-    template: "%s | Panelroom",
+    default: "PrepX | AI Mock Interviews for Software Engineers",
+    template: "%s | PrepX",
   },
   description:
-    "Practice technical interviews with Panelroom's AI-powered mock interview platform. Real-time feedback on coding, system design, and behavioral rounds. Personalized coaching based on your resume. Free during beta.",
+    "Practice technical interviews with PrepX's AI-powered mock interview platform. Real-time feedback on coding, system design, and behavioral rounds. Personalized coaching based on your resume.",
   keywords: [
     "mock interview",
     "technical interview",
@@ -54,11 +54,11 @@ export const metadata: Metadata = {
     "interview preparation",
     "tech interview",
     "interview coach",
-    "Panelroom",
+    "PrepX",
   ],
-  authors: [{ name: "Panelroom" }],
-  creator: "Panelroom",
-  publisher: "Panelroom",
+  authors: [{ name: "PrepX" }],
+  creator: "PrepX",
+  publisher: "PrepX",
   robots: {
     index: true,
     follow: true,
@@ -73,41 +73,39 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://panelroom.io",
-    siteName: "Panelroom",
-    title: "Panelroom | AI Mock Interviews for Software Engineers",
+    url: "https://PrepX.io",
+    siteName: "PrepX",
+    title: "PrepX | AI Mock Interviews for Software Engineers",
     description:
-      "Practice technical interviews with AI. Get real-time feedback on coding, system design, and behavioral rounds. Free during beta.",
+      "Practice technical interviews with AI. Get real-time feedback on coding, system design, and behavioral rounds.",
     images: [
       {
-        url: "/logo-light.png",
+        url: "/logos/prepX-logo.png",
         width: 1200,
         height: 630,
-        alt: "Panelroom - AI Mock Interviews",
+        alt: "PrepX - AI Mock Interviews",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Panelroom | AI Mock Interviews for Software Engineers",
+    title: "PrepX | AI Mock Interviews for Software Engineers",
     description:
       "Practice technical interviews with AI. Get real-time feedback on coding, system design, and behavioral rounds.",
-    images: ["/logo-light.png"],
+    images: ["/logos/prepX-logo.png"],
   },
-  metadataBase: new URL("https://panelroom.io"),
+  metadataBase: new URL("https://PrepX.io"),
   alternates: {
     canonical: "/",
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon-dark.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
-      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/logos/favi.png", type: "image/png" },
     ],
     apple: [
-      { url: "/logos/panelroom-app-icon.svg", type: "image/svg+xml" },
+      { url: "/logos/favi.png", type: "image/png" },
     ],
-    shortcut: "/favicon.svg",
+    shortcut: "/logos/favi.png",
   },
   manifest: "/manifest.json",
 };
@@ -127,7 +125,7 @@ export const viewport: Viewport = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Panelroom",
+  name: "PrepX",
   applicationCategory: "Education",
   description:
     "AI-powered mock interview platform for software engineers. Practice coding, system design, and behavioral interviews with real-time feedback.",
@@ -135,7 +133,7 @@ const jsonLd = {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
-    description: "Free during beta",
+    description: "Free to start",
   },
   operatingSystem: "Web Browser",
   aggregateRating: {
@@ -161,11 +159,11 @@ export default function RootLayout({
           type="font/otf"
           crossOrigin="anonymous"
         />
-        
+
         {/* DNS prefetch for external services */}
         <link rel="dns-prefetch" href="https://supabase.co" />
         <link rel="dns-prefetch" href="https://livekit.io" />
-        
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

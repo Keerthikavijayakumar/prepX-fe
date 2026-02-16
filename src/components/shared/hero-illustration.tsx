@@ -16,7 +16,7 @@ function HeroIllustrationComponent({ className = "" }: HeroIllustrationProps) {
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-auto"
         role="img"
-        aria-label="Panelroom AI Interview Platform illustration showing a candidate in a virtual interview with an AI interviewer panel"
+        aria-label="PrepX AI Interview Platform illustration showing a candidate in a virtual interview with an AI interviewer panel"
       >
         <defs>
           <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -70,7 +70,7 @@ function HeroIllustrationComponent({ className = "" }: HeroIllustrationProps) {
           
           {/* URL bar */}
           <rect x="100" y="8" width="400" height="16" rx="4" className="fill-background/80" />
-          <text x="120" y="20" className="fill-muted-foreground text-[10px]" fontFamily="monospace">panelroom.io/interview</text>
+          <text x="120" y="20" className="fill-muted-foreground text-[10px]" fontFamily="monospace">PrepX.io/interview</text>
 
           {/* Video call interface */}
           <rect x="12" y="44" width="576" height="294" rx="8" className="fill-background" />

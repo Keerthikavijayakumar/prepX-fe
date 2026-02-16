@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, History, User, Sparkles } from "lucide-react";
 import { NavbarUserControls } from "@/components/navbar/user-controls";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -80,20 +79,15 @@ function NavbarComponent() {
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             {/* Left: Logo */}
             <div className="flex items-center gap-8">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="flex items-center shrink-0 group py-1"
               >
-                <div className="transition-transform duration-200 group-hover:scale-[1.02] h-10 sm:h-12">
-                  <img 
-                    src="/logos/panelroom-lockup-light.svg" 
-                    alt="Panelroom" 
-                    className="block dark:hidden h-full w-auto object-contain"
-                  />
-                  <img 
-                    src="/logos/panelroom-lockup-dark.svg" 
-                    alt="Panelroom" 
-                    className="hidden dark:block h-full w-auto object-contain"
+                <div className="transition-transform duration-200 group-hover:scale-[1.02] h-20 sm:h-24">
+                  <img
+                    src="/logos/prepX-logo.png"
+                    alt="PrepX"
+                    className="h-full w-auto object-contain"
                   />
                 </div>
               </Link>
@@ -147,12 +141,6 @@ function NavbarComponent() {
                       {link.label}
                     </Link>
                   ))}
-                  <Badge
-                    variant="outline"
-                    className="ml-2 border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"
-                  >
-                    Beta
-                  </Badge>
                 </nav>
               )}
             </div>
@@ -288,7 +276,7 @@ function NavbarComponent() {
                 ))}
               </>
             )}
-            
+
             <div className="pt-3 mt-3 border-t border-border/50">
               <NavbarUserControls currentPath={pathname} />
             </div>

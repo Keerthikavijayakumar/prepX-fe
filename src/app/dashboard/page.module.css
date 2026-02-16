@@ -51,7 +51,7 @@
 }
 
 .dark .resumeStatus {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.03);
 }
 
 .resumeStatus h2 {
@@ -90,7 +90,7 @@
   .dashboardPage {
     padding: 56px 16px 40px;
   }
-  
+
 
   .resumeStatus {
     padding: 16px;

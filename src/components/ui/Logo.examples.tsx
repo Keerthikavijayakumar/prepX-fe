@@ -2,7 +2,7 @@
  * LOGO USAGE EXAMPLES
  * 
  * This file demonstrates how to use the Logo component
- * in your Panelroom application
+ * in your PrepX application
  */
 
 import { Logo, LogoSymbol, LogoLockupLight, LogoLockupDark, LogoAppIcon } from '@/components/ui/Logo';
@@ -36,7 +36,7 @@ export function FooterExample() {
         {/* Dark mode logo - use in dark backgrounds */}
         <LogoLockupDark size="lg" className="mb-8" />
         
-        <p className="text-slate-400">© 2026 Panelroom. All rights reserved.</p>
+        <p className="text-slate-400">© 2026 PrepX. All rights reserved.</p>
       </div>
     </footer>
   );
@@ -141,8 +141,8 @@ export function AppIconExample() {
       <div className="flex items-center gap-3 p-4 border border-slate-200 rounded-lg">
         <LogoSymbol size="md" />
         <div>
-          <p className="font-semibold">Panelroom</p>
-          <p className="text-sm text-slate-500">@panelroom</p>
+          <p className="font-semibold">PrepX</p>
+          <p className="text-sm text-slate-500">@PrepX</p>
         </div>
       </div>
     </div>
